@@ -1,7 +1,8 @@
 // Simulates 1000 concurrent visitors: logging in, browsing, showing badges, and claiming coins.
 import http from "k6/http";
 import { check, sleep } from "k6";
-import { Rate } from "k6/metrics";
+import exec from "k6/execution";
+import { Rate, Trend } from "k6/metrics";
 
 // One address, or several separated by commas to spread visitors across them.
 const TARGETS = (__ENV.BASE_URLS || "https://localhost").split(",");
@@ -9,6 +10,11 @@ const BASE = TARGETS[(__VU || 1) % TARGETS.length];
 const PASSWORD = "load-test-password";
 const CODE_COUNT = 20;
 const claimFailures = new Rate("claim_failures");
+const loginTime = new Trend("time_login", true);
+const claimTime = new Trend("time_claim", true);
+const browseRushTime = new Trend("time_browse_during_login_rush", true);
+const browseSteadyTime = new Trend("time_browse_steady", true);
+const RUSH_END = 0.3;
 
 export const options = {
   insecureSkipTLSVerify: true,
@@ -46,6 +52,7 @@ function login() {
     JSON.stringify({ email: `load${__VU}@loadtest.invalid`, password: PASSWORD }),
     { headers: { "Content-Type": "application/json" }, tags: { name: "login" } },
   );
+  loginTime.add(response.timings.duration);
   check(response, { "login ok": (reply) => reply.status === 200 });
 }
 
@@ -56,6 +63,7 @@ function claim() {
     headers: { "Content-Type": "application/json" },
     tags: { name: "claim" },
   });
+  claimTime.add(response.timings.duration);
   const ok = response.status === 200;
   claimFailures.add(!ok);
   check(response, { "claim ok": () => ok });
@@ -69,6 +77,8 @@ export default function visitor() {
   }
   const path = PAGES[Math.floor(Math.random() * PAGES.length)];
   const response = http.get(`${BASE}${path}`, { tags: { name: path } });
+  const browseTime = exec.scenario.progress < RUSH_END ? browseRushTime : browseSteadyTime;
+  browseTime.add(response.timings.duration);
   check(response, { "page ok": (reply) => reply.status === 200, "still logged in": (reply) => !reply.url.includes("/login") });
   if (Math.random() < 0.15) claim();
   think();
