@@ -1,0 +1,87 @@
+// Tests small helpers: dates, redirects, scanned text, generated codes, and QR output.
+import { describe, expect, it } from "vitest";
+import { CODE_ALPHABET } from "@/config/literals";
+import { LIMITS } from "@/config/limits";
+import { generateBadgeCode, generateCoinToken } from "@/lib/codes";
+import { riyadhDate } from "@/lib/dates";
+import { qrSvg } from "@/lib/qr";
+import { normalizeCode, parseCoinPayload } from "@/lib/qr-payload";
+import { safeNextPath } from "@/lib/safe-redirect";
+
+describe("riyadhDate", () => {
+  it("rolls over at Riyadh midnight, three hours before UTC midnight", () => {
+    expect(riyadhDate(new Date("2026-12-13T20:59:00Z"))).toBe("2026-12-13");
+    expect(riyadhDate(new Date("2026-12-13T21:00:00Z"))).toBe("2026-12-14");
+  });
+});
+
+describe("safeNextPath", () => {
+  it("keeps a path on this site", () => {
+    expect(safeNextPath("/ar/scan/ABC", "/ar")).toBe("/ar/scan/ABC");
+  });
+
+  it.each(["https://evil.com", "//evil.com", "/\\evil.com", "\\\\evil.com", "javascript:alert(1)", "", null])(
+    "rejects %s",
+    (value) => {
+      expect(safeNextPath(value, "/ar")).toBe("/ar");
+    },
+  );
+});
+
+describe("parseCoinPayload", () => {
+  it("accepts a bare token", () => {
+    expect(parseCoinPayload("ABCD2345EFGH")).toBe("ABCD2345EFGH");
+  });
+
+  it("uppercases a typed token and trims it", () => {
+    expect(parseCoinPayload("  abcd2345efgh ")).toBe("ABCD2345EFGH");
+  });
+
+  it("reads the token from a full link", () => {
+    expect(parseCoinPayload("https://site.example/scan/ABCD2345EFGH")).toBe("ABCD2345EFGH");
+  });
+
+  it("reads the token from a language link", () => {
+    expect(parseCoinPayload("https://site.example/en/scan/ABCD2345EFGH?x=1")).toBe("ABCD2345EFGH");
+  });
+
+  it.each(["hello world", "https://evil.com/phish", "", "FW!"])("rejects %s", (value) => {
+    expect(parseCoinPayload(value)).toBeNull();
+  });
+});
+
+describe("normalizeCode", () => {
+  it("uppercases, trims, and removes dashes", () => {
+    expect(normalizeCode(" fw-abc ")).toBe("FWABC");
+  });
+});
+
+describe("generated codes", () => {
+  const allowed = new RegExp(`^[${CODE_ALPHABET}]+$`);
+
+  it("makes coin tokens from the safe alphabet", () => {
+    const token = generateCoinToken();
+    expect(token).toHaveLength(LIMITS.coinCodeLength);
+    expect(token).toMatch(allowed);
+  });
+
+  it("makes badge codes with the prefix", () => {
+    expect(generateBadgeCode()).toMatch(/^FW[2-9A-Z]{10}$/);
+  });
+
+  it("does not repeat", () => {
+    const tokens = new Set(Array.from({ length: 500 }, generateCoinToken));
+    expect(tokens.size).toBe(500);
+  });
+
+  it("round-trips a generated token through the payload parser", () => {
+    const token = generateCoinToken();
+    expect(parseCoinPayload(token)).toBe(token);
+  });
+});
+
+describe("qrSvg", () => {
+  it("returns an SVG", async () => {
+    expect(await qrSvg("hello")).toContain("<svg");
+  });
+});

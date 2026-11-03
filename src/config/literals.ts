@@ -38,3 +38,4 @@ export const CSV_FILE_NAME = "formula-week-registrants.csv";
 export const JWT_ALGORITHM = "HS256";
 export const CONTENT_TYPES = { csv: "text/csv; charset=utf-8", svg: "image/svg+xml" } as const;
 export const HEADERS = { origin: "origin", host: "host", forwardedHost: "x-forwarded-host" } as const;
+export const QR_OPTIONS = { margin: 2, errorCorrectionLevel: "M", darkColor: "#0c272c", lightColor: "#ffffff" } as const;

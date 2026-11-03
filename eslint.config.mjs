@@ -7,10 +7,12 @@ export default [
   { ignores: [".next/**", "node_modules/**", "src/db/migrations/**", "next-env.d.ts", ".superpowers/**"] },
   ...nextVitals,
   ...nextTypescript,
+  { settings: { next: { rootDir: "." } }, rules: { "@next/next/no-html-link-for-pages": "off" } },
   {
     files: ["src/**/*.{ts,tsx}", "tests/**/*.ts", "loadtest/**/*.{ts,js}"],
     plugins: { jsdoc },
     rules: {
+      "@typescript-eslint/no-unused-vars": ["warn", { ignoreRestSiblings: true }],
       "jsdoc/require-jsdoc": [
         "error",
         {

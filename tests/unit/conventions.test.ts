@@ -39,12 +39,14 @@ describe("project conventions", () => {
   });
 
   it("keeps Arabic text out of code files", () => {
+    /** Tells whether a file may hold Arabic text. */
     const allowed = (file: string) => TEXT_ALLOWED.some((prefix) => file.startsWith(prefix));
     const offenders = files.filter((file) => !allowed(file) && ARABIC.test(readFileSync(file, "utf8")));
     expect(offenders).toEqual([]);
   });
 
   it("keeps route strings in the routes config", () => {
+    /** Tells whether a file may hold route strings. */
     const allowed = (file: string) => ROUTES_ALLOWED.some((prefix) => file.startsWith(prefix));
     const offenders = files.filter((file) => !allowed(file) && ROUTE_LITERAL.test(readFileSync(file, "utf8")));
     expect(offenders).toEqual([]);

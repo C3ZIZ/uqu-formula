@@ -41,6 +41,9 @@ export const API_ROUTES = {
   adminCoinCodeQr: (id: string) => `/api/admin/coin-codes/${id}/qr`,
 } as const;
 
+// Finds the code inside any scanned link to this site.
+export const SCAN_LINK_PATTERN = /\/scan\/([^/?#]+)\/?(?:[?#].*)?$/;
+
 /** Adds the language prefix to a page path. */
 export function localePath(locale: Locale, path: string): string {
   return path === PAGE_ROUTES.home ? `/${locale}` : `/${locale}${path}`;
