@@ -66,7 +66,7 @@ loadtest/         k6 script
 
 | Table | Purpose | Rule |
 |---|---|---|
-| `users` | Name, email, phone, role, password hash, failed-login count, lock time, badge code, preferred locale | Email and badge code are unique |
+| `users` | Name, email, phone, role, password hash, failed-login count, lock time, badge code | Email and badge code are unique |
 | `password_resets` | Hash of a reset token, expiry, used time | A token works once and expires after one hour |
 | `check_ins` | Visitor, Riyadh calendar date, staff member, time | Unique on visitor and date |
 | `zones` | Arabic and English name and details, type, position and size on the map | |
@@ -78,7 +78,7 @@ loadtest/         k6 script
 
 ### Coin claim
 
-1. A printed QR holds a link to `/{locale}/scan/{token}`, so the phone camera or the in-site scanner can open it.
+1. A printed QR holds a link to `/scan/{token}`, so the phone camera or the in-site scanner can open it. That link forwards to the visitor's language.
 2. Opening the link changes nothing, so link previews cannot claim coins. The page sends a POST from the browser.
 3. A logged-out visitor goes to login and returns to the same link.
 4. The service inserts the claim with `ON CONFLICT DO NOTHING`. The database alone decides, so simultaneous scans count once.
