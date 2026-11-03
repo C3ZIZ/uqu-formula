@@ -66,7 +66,7 @@ test("a visitor without camera access can type a code, and history updates", asy
   await expect(page).toHaveURL(/\/ar\/badge$/);
 
   await page.goto("/ar/coins");
-  await page.getByRole("button", { name: "امسح كود" }).click();
+  await page.getByRole("button", { name: "امسح", exact: true }).click();
   await expect(page.getByText("لم نتمكن من فتح الكاميرا")).toBeVisible();
   await page.getByLabel("أو اكتب الرمز").fill("nonsense code!");
   await page.getByRole("button", { name: "تأكيد" }).click();

@@ -7,6 +7,7 @@ import {
   checkInWithCode,
   createAttendanceCode,
   deleteAttendanceCode,
+  isAttendanceToken,
   listAttendanceCodes,
   setAttendanceCodeActive,
 } from "@/services/attendance-codes";
@@ -87,6 +88,12 @@ describe("attendance codes", () => {
     await checkInByBadge(staff.id, visitor.badgeCode, ON_DAY_ONE);
     expect((await checkInWithCode(visitor.id, code.token, LATE_ON_DAY_ONE)).status).toBe("already");
     expect(await getAttendanceDays(visitor.id)).toEqual([DAY_ONE]);
+  });
+
+  it("recognizes its own tokens, even typed in lowercase, for the one scan button", async () => {
+    const code = await makeCode();
+    expect(await isAttendanceToken(code.token.toLowerCase())).toBe(true);
+    expect(await isAttendanceToken("ABCDEFGH2345")).toBe(false);
   });
 
   it("allows one code per date", async () => {

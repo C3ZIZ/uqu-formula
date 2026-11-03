@@ -4,17 +4,9 @@ import { DAY_NUMBERS, MAP_GRID } from "@/config/event";
 import { LIMITS } from "@/config/limits";
 import { ROLE_LIST, ZONE_TYPES } from "@/config/literals";
 import { LOCALES } from "@/config/locales";
+import { toLatinDigits } from "./digits";
 
-const ARABIC_ZERO = 0x0660;
-const PERSIAN_ZERO = 0x06f0;
-
-/** Converts Arabic and Persian digits to Latin digits, since phones often type them. */
-export function toLatinDigits(value: string): string {
-  return value.replace(/[\u0660-\u0669\u06f0-\u06f9]/g, (digit) => {
-    const code = digit.charCodeAt(0);
-    return String(code - (code >= PERSIAN_ZERO ? PERSIAN_ZERO : ARABIC_ZERO));
-  });
-}
+export { toLatinDigits };
 
 const emailField = z.string().trim().toLowerCase().max(LIMITS.emailMaxLength).pipe(z.email());
 const passwordField = z.string().min(LIMITS.passwordMinLength).max(LIMITS.passwordMaxLength);

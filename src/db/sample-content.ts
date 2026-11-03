@@ -24,7 +24,7 @@ export const SAMPLE_ZONES: SampleZone[] = [
   { key: "booths-clubs", nameAr: "بوثات النوادي", nameEn: "Club Booths", detailsAr: "مشاريع طلابية من النوادي الهندسية.", detailsEn: "Student projects from engineering clubs.", type: "booth", x: 66, y: 61, width: 28, height: 22 },
   { key: "services", nameAr: "الخدمات والمصلى", nameEn: "Services & Prayer Room", detailsAr: "دورات المياه والمصلى ونقطة الإسعاف.", detailsEn: "Restrooms, prayer room, and first aid.", type: "services", x: 6, y: 88, width: 28, height: 20 },
   { key: "cafe", nameAr: "منطقة الضيافة", nameEn: "Hospitality Area", detailsAr: "قهوة ووجبات خفيفة بين الفقرات.", detailsEn: "Coffee and snacks between sessions.", type: "services", x: 66, y: 88, width: 28, height: 20 },
-  { key: "entrance", nameAr: "البوابة وتسجيل الحضور", nameEn: "Gate & Check-in", detailsAr: "اعرض البادج هنا عند الدخول.", detailsEn: "Show your badge here when you arrive.", type: "entrance", x: 30, y: 116, width: 40, height: 18 },
+  { key: "entrance", nameAr: "البوابة وتسجيل الحضور", nameEn: "Gate & Check-in", detailsAr: "امسح كود الدخول هنا لتسجيل حضورك.", detailsEn: "Scan the entrance code here to check yourself in.", type: "entrance", x: 30, y: 116, width: 40, height: 18 },
 ];
 
 interface SampleItem {

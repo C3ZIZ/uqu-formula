@@ -1,6 +1,5 @@
 // The coins screen: total, scanner, and history.
 import { CoinCount } from "@/components/CoinCount";
-import { ScanButton } from "@/components/ScanButton";
 import { Slashes } from "@/components/Slashes";
 import { getMessages } from "@/config/messages";
 import { localePath, PAGE_ROUTES } from "@/config/routes";
@@ -26,7 +25,6 @@ export default async function CoinsPage({ params }: LocaleProps) {
             <CoinCount value={summary.total} />
             <span className="coins-unit">{text.coins.unit}</span>
           </p>
-          <ScanButton locale={locale} expected="coin" scanLabel={text.coins.scan} text={text.scanner} />
         </div>
       </div>
 

@@ -369,3 +369,32 @@ html[lang="en"] .brand {
 .bottom-nav a span {
   position: relative;
 }
+
+/* The one scan button sits raised in the middle of the bar, in the identity's slanted shape. */
+.nav-scan {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: calc(100% - 4px);
+  height: calc(var(--nav-height) + 14px);
+  margin-block-start: -14px;
+  margin-inline: 2px;
+  border: 0;
+  background: var(--taupe);
+  color: var(--black);
+  font-size: 0.75rem;
+  font-weight: 700;
+  clip-path: polygon(14% 0, 100% 0, 86% 100%, 0 100%);
+  transition: transform var(--fast) var(--ease-out);
+}
+
+.nav-scan:active {
+  transform: scale(0.95);
+}
+
+.nav-scan:focus-visible {
+  clip-path: none;
+}
