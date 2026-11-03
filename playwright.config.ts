@@ -9,6 +9,8 @@ export default defineConfig({
   fullyParallel: false,
   workers: 2,
   reporter: "list",
+  // Local Docker can run on a single CPU, where parallel logins take several seconds.
+  expect: { timeout: 10_000 },
   use: {
     ...devices["Pixel 7"],
     baseURL: process.env.E2E_BASE_URL ?? "https://localhost",

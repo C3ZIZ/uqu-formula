@@ -12,6 +12,8 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Slashes } from "./Slashes";
 
+const VIBRATE_MS = 120;
+
 interface AttendanceResultProps {
   locale: Locale;
   token: string;
@@ -34,8 +36,10 @@ export function AttendanceResult({ locale, token, text, errors }: AttendanceResu
   const checkIn = useCallback(async () => {
     setFailure(undefined);
     const result = await sendJson<CheckInReply>(API_ROUTES.attendanceCheckIn, "POST", { token });
-    if (result.ok) setReply(result.data);
-    else setFailure((errors as Record<string, string>)[result.error] ?? errors.SERVER);
+    if (result.ok) {
+      setReply(result.data);
+      if (result.data.status === CHECK_IN_STATUS.checkedIn) navigator.vibrate?.(VIBRATE_MS);
+    } else setFailure((errors as Record<string, string>)[result.error] ?? errors.SERVER);
   }, [errors, token]);
 
   useEffect(() => {
@@ -46,6 +50,12 @@ export function AttendanceResult({ locale, token, text, errors }: AttendanceResu
 
   return (
     <div className="band claim" aria-live="polite">
+      {reply?.status === CHECK_IN_STATUS.checkedIn ? (
+        <p className="toast" role="alert">
+          <CircleCheck size={22} aria-hidden="true" />
+          {text.alert}
+        </p>
+      ) : null}
       <Slashes />
       <div className="content claim-inner">
         {!reply && !failure ? <p className="claim-working">{text.working}</p> : null}

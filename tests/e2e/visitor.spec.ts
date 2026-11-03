@@ -145,3 +145,22 @@ test("the official logo and icon are served", async ({ page, request }) => {
   const mask = await page.locator(".hero .logo").evaluate((node) => getComputedStyle(node).maskImage);
   expect(mask).toContain("logo-mark.png");
 });
+
+test("nothing tells visitors to show a code at the entrance, since they check themselves in", async ({ page }) => {
+  await page.goto("/ar");
+  await expect(page.locator("body")).not.toContainText("اعرض البادج عند");
+  await expect(page.locator(".steps")).toContainText("امسح كود الدخول");
+  await page.goto("/ar/register");
+  await page.getByLabel("الاسم الكامل").fill("سارة");
+  await page.getByLabel("البريد الإلكتروني").fill(`e2e-${Date.now()}-${Math.round(Math.random() * 1e6)}@example.com`);
+  await page.getByLabel("رقم الجوال").fill("0501234567");
+  await page.getByLabel("كلمة المرور").fill("password-123");
+  await page.getByRole("button", { name: "إنشاء الحساب" }).click();
+  await expect(page).toHaveURL(/\/ar\/badge$/);
+  await expect(page.locator("body")).not.toContainText("اعرض هذا الرمز");
+  await page.goto("/en");
+  await expect(page.locator(".steps")).not.toContainText("Show your badge");
+  await page.goto("/ar/map");
+  await page.locator(".map-canvas .map-zone--entrance").click();
+  await expect(page.getByRole("dialog")).toContainText("امسح كود الدخول");
+});

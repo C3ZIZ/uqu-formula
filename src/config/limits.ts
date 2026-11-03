@@ -22,7 +22,7 @@ export const LIMITS = {
   coinsMin: 1,
   coinsMax: 10_000,
   scanIntervalMs: 150,
-  scanCooldownMs: 2_500,
+  scanCooldownMs: 30_000,
   coinCountUpMs: 700,
 } as const;
 

@@ -37,6 +37,16 @@ export async function checkInWithCode(userId: string, rawToken: string, now: Dat
   return { status: CHECK_IN_STATUS.already, at: existing.at } as const;
 }
 
+/** Tells whether a typed code belongs to an attendance code, so the one scan button can route it. */
+export async function isAttendanceToken(rawToken: string): Promise<boolean> {
+  const [code] = await db
+    .select({ id: attendanceCodes.id })
+    .from(attendanceCodes)
+    .where(eq(attendanceCodes.token, normalizeCode(rawToken)))
+    .limit(1);
+  return Boolean(code);
+}
+
 /** Lists codes by date, with how many visitors attended on each date. */
 export async function listAttendanceCodes() {
   return db

@@ -93,7 +93,7 @@ An admin creates one attendance code per date and displays it at the entrance. A
 
 Staff can also scan a badge QR that holds the random badge code. Both methods insert into the same table, one row per visitor per Riyadh date, so a repeat reports the earlier time instead of failing. The badge code reveals no personal data.
 
-A shared photo of the door code would let someone check in from elsewhere. The staff scanner remains the stricter option.
+Visitors check themselves in, and nothing asks them to show a code at the entrance. A first check-in of the day shows an alert. Logging in alone records nothing. A shared photo of the door code would let someone check in from elsewhere, so the staff scanner remains as a stricter backup.
 
 ### Accounts
 
@@ -130,7 +130,7 @@ The site should feel like a race paddock and not a template.
 - Real CC0 textures: track asphalt for dark surfaces and woven carbon for the badge backing. Textures come from Poly Haven and ambientCG, and each one is listed with its source and license in the repository.
 - Full-bleed bands of color with slanted edges replace cards. Lists use spacing and hairlines. Nothing has a colored stripe on one edge, and rounded bordered boxes are avoided.
 - Large type and time values lead the agenda, in the manner of a timing screen.
-- A fixed bottom bar holds the main sections, within thumb reach. Tap targets are at least 44 pixels.
+- A fixed bottom bar holds four sections with one raised scan button in the middle, within thumb reach. That button reads every site QR. Tap targets are at least 44 pixels.
 - Motion is short and functional: a slide between days, a sheet rising on the map, a brief count-up when coins arrive. Reduced-motion settings are honored.
 - Layouts use logical CSS properties, so Arabic and English mirror correctly.
 
@@ -140,8 +140,8 @@ The site should feel like a race paddock and not a template.
 - **Register, login, forgot password, reset password.**
 - **Agenda:** day tabs and timed entries that link to their map zone.
 - **Map:** tappable zones that open a bottom sheet with details and the zone's agenda.
-- **Badge:** name, QR, and code on a carbon backing, sized to show at arm's length.
-- **Coins:** total, scanner button, claim history.
+- **Badge:** name, attendance status, QR, and code on a carbon backing.
+- **Coins:** total and claim history.
 - **Scan result:** coins earned, already collected, or not valid.
 - **Staff check-in:** continuous scanner with immediate results.
 - **Attendance result:** checked in, already checked in, another day, or not valid.

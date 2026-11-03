@@ -75,17 +75,59 @@ test("a logged-out visitor scans the door code, registers, returns, and is check
   await admin.dispose();
 });
 
-test("a visitor can open the scanner from the badge and type a code", async ({ page, request }) => {
+test("the middle scan button handles a typed attendance code and alerts once", async ({ browser, page, playwright, baseURL }) => {
+  const admin = await playwright.request.newContext({ baseURL, ignoreHTTPSErrors: true });
+  await loginAdminApi(admin);
+  const token = await todayToken(browser, admin, baseURL);
+  await page.goto("/ar/register");
+  await registerByForm(page, "زائر الزر", uniqueEmail());
+  await expect(page).toHaveURL(/\/ar\/badge$/);
+
+  await page.getByRole("button", { name: "امسح", exact: true }).click();
+  await page.getByLabel("أو اكتب الرمز").fill(token.toLowerCase());
+  await page.getByRole("button", { name: "تأكيد" }).click();
+
+  await expect(page).toHaveURL(new RegExp(`/ar/attend/${token}$`));
+  await expect(page.getByRole("heading", { name: "تم تسجيل حضورك" })).toBeVisible();
+  await expect(page.locator(".toast")).toContainText("تم تسجيل حضورك");
+  await expect(page.getByRole("dialog")).toBeHidden();
+
+  await page.reload();
+  await expect(page.getByRole("heading", { name: "سجلت حضورك اليوم مسبقًا" })).toBeVisible();
+  await expect(page.locator(".toast")).toHaveCount(0);
+  await admin.dispose();
+});
+
+test("logging in alone does not record attendance", async ({ page, request }) => {
   const email = await registerByApi(request);
+  await page.context().clearCookies();
   await page.goto("/ar/login");
   await loginByForm(page, email, PASSWORD);
   await expect(page).toHaveURL(/\/ar$/);
+  await expect(page.locator(".toast")).toHaveCount(0);
   await page.goto("/ar/badge");
-  await page.getByRole("button", { name: "امسح كود الدخول" }).click();
+  await expect(page.locator(".badge-status")).toContainText("لم يُسجل حضورك");
+  await expect(page.locator(".badge-status")).toContainText("زر التصوير");
+});
+
+test("the scan button works for logged-out visitors and closes after a read", async ({ page }) => {
+  await page.goto("/ar/agenda");
+  await page.getByRole("button", { name: "امسح", exact: true }).click();
   await page.getByLabel("أو اكتب الرمز").fill("abcdefgh2345");
   await page.getByRole("button", { name: "تأكيد" }).click();
-  await expect(page).toHaveURL(/\/ar\/attend\/ABCDEFGH2345$/);
-  await expect(page.getByRole("heading", { name: "هذا الكود غير صالح" })).toBeVisible();
+  await expect(page).toHaveURL(/\/ar\/login\?next=/);
+  await expect(page.getByRole("dialog")).toBeHidden();
+});
+
+test("the bottom bar has five items with scanning in the middle", async ({ page }) => {
+  await page.goto("/ar");
+  const items = page.locator(".bottom-nav > ul > li");
+  await expect(items).toHaveCount(5);
+  await expect(items.nth(2).getByRole("button", { name: "امسح", exact: true })).toBeVisible();
+  const box = await items.nth(2).getByRole("button", { name: "امسح", exact: true }).boundingBox();
+  expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);
+  await page.getByRole("link", { name: "أسبوع الفورميلا" }).click();
+  await expect(page).toHaveURL(/\/ar$/);
 });
 
 test("visitors cannot manage attendance codes", async ({ request }) => {

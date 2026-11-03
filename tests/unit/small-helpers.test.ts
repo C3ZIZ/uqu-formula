@@ -20,7 +20,11 @@ describe("safeNextPath", () => {
     expect(safeNextPath("/ar/scan/ABC", "/ar")).toBe("/ar/scan/ABC");
   });
 
-  it.each(["https://evil.com", "//evil.com", "/\\evil.com", "\\\\evil.com", "javascript:alert(1)", "", null])(
+  it("keeps the query string", () => {
+    expect(safeNextPath("/ar/x?a=1", "/ar")).toBe("/ar/x?a=1");
+  });
+
+  it.each(["https://evil.com", "//evil.com", "/\\evil.com", "\\\\evil.com", "javascript:alert(1)", "", null, "/\t/evil.com", "/\n/evil.com", "/\r/evil.com", "\t//evil.com", "/ /evil.com\u0000"])(
     "rejects %s",
     (value) => {
       expect(safeNextPath(value, "/ar")).toBe("/ar");
@@ -37,6 +41,10 @@ describe("parseCoinPayload", () => {
     expect(parseCoinPayload("  abcd2345efgh ")).toBe("ABCD2345EFGH");
   });
 
+  it("accepts a token typed with Arabic digits", () => {
+    expect(parseCoinPayload("abcd٢٣٤٥efgh")).toBe("ABCD2345EFGH");
+  });
+
   it("reads the token from a full link", () => {
     expect(parseCoinPayload("https://site.example/scan/ABCD2345EFGH")).toBe("ABCD2345EFGH");
   });
@@ -51,33 +59,33 @@ describe("parseCoinPayload", () => {
 });
 
 describe("parseScanTarget", () => {
-  it("recognizes a coin link wherever the scanner was opened", () => {
-    expect(parseScanTarget("https://site.example/scan/ABCD2345EFGH", "attendance")).toEqual({
-      kind: "coin",
-      token: "ABCD2345EFGH",
-    });
+  it("recognizes a coin link", () => {
+    expect(parseScanTarget("https://site.example/scan/ABCD2345EFGH")).toEqual({ kind: "coin", token: "ABCD2345EFGH" });
   });
 
-  it("recognizes an attendance link wherever the scanner was opened", () => {
-    expect(parseScanTarget("https://site.example/en/attend/ABCD2345EFGH", "coin")).toEqual({
+  it("recognizes an attendance link", () => {
+    expect(parseScanTarget("https://site.example/en/attend/ABCD2345EFGH")).toEqual({
       kind: "attendance",
       token: "ABCD2345EFGH",
     });
   });
 
-  it("treats a typed code as the kind the scanner expects", () => {
-    expect(parseScanTarget("abcd2345efgh", "attendance")).toEqual({ kind: "attendance", token: "ABCD2345EFGH" });
-    expect(parseScanTarget("abcd2345efgh", "coin")).toEqual({ kind: "coin", token: "ABCD2345EFGH" });
+  it("sends a typed code to the coin screen, which forwards attendance codes", () => {
+    expect(parseScanTarget("abcd2345efgh")).toEqual({ kind: "coin", token: "ABCD2345EFGH" });
   });
 
   it.each(["hello world", "https://evil.com/phish", ""])("rejects %s", (value) => {
-    expect(parseScanTarget(value, "coin")).toBeNull();
+    expect(parseScanTarget(value)).toBeNull();
   });
 });
 
 describe("normalizeCode", () => {
   it("uppercases, trims, and removes dashes", () => {
     expect(normalizeCode(" fw-abc ")).toBe("FWABC");
+  });
+
+  it("converts Arabic digits typed on an Arabic keyboard", () => {
+    expect(normalizeCode("fw٢٣-a٧")).toBe("FW23A7");
   });
 });
 

@@ -59,7 +59,7 @@ export default async function LocaleLayout({ children, params }: LocaleProps & {
       <body>
         <TopBar locale={locale} />
         {children}
-        <BottomNav locale={locale} text={text.nav} />
+        <BottomNav locale={locale} text={text.nav} scannerText={text.scanner} />
       </body>
     </html>
   );

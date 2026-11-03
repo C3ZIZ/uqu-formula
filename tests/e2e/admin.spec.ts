@@ -128,6 +128,13 @@ test("staff check in a visitor once per day, and the badge and totals update", a
   await expect(page.locator(".result--good")).toContainText(name);
   await expect(page.locator(".desk-count .numeric")).toHaveText(String(countBefore + 1));
 
+  // A badge left in view keeps reading: the success message must stay on screen.
+  await page.waitForTimeout(3000);
+  await page.getByLabel("أو اكتب الرمز").fill(badgeCode);
+  await page.getByRole("button", { name: "تأكيد" }).click();
+  await page.waitForTimeout(500);
+  await expect(page.locator(".result--good")).toContainText(name);
+
   await page.reload();
   await page.getByRole("button", { name: "تشغيل الماسح" }).click();
   await page.getByLabel("أو اكتب الرمز").fill(badgeCode);

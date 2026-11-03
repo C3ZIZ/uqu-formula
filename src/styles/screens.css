@@ -462,19 +462,6 @@ html[lang="en"] .band.hero h1 {
   height: auto;
 }
 
-.badge-scan {
-  display: grid;
-}
-
-.badge-scan .button {
-  width: 100%;
-}
-
-.badge-instruction {
-  text-align: center;
-  font-weight: 500;
-}
-
 .badge-code {
   text-align: center;
   font-size: 1.125rem;
@@ -906,5 +893,30 @@ html[lang="en"] .band.hero h1 {
 
   .print-qr {
     width: 14cm;
+  }
+}
+
+/* Short alert that slides in from the top after attendance is recorded. */
+.toast {
+  position: fixed;
+  z-index: 30;
+  inset-block-start: calc(12px + env(safe-area-inset-top));
+  inset-inline: var(--gutter);
+  max-width: var(--content);
+  margin-inline: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  background: var(--taupe);
+  color: var(--black);
+  font-weight: 700;
+  animation: toast-in var(--medium) var(--ease-out);
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-24px);
   }
 }
