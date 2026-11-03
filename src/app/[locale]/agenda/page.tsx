@@ -9,6 +9,14 @@ import { pageLocale, type LocaleProps } from "@/lib/page";
 import { getAgenda } from "@/services/agenda";
 import { getZones } from "@/services/zones";
 
+// Serve this page from a shared cache and refresh it every few seconds, since all visitors see the same content.
+export const revalidate = 20;
+
+/** No pages are prebuilt, because the database is not available during the image build. */
+export function generateStaticParams() {
+  return [];
+}
+
 /** Loads the agenda and shows it, opening on today during the event. */
 export default async function AgendaPage({ params }: LocaleProps) {
   const locale = await pageLocale(params);

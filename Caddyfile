@@ -11,8 +11,8 @@
 		-Server
 	}
 
-	@textures path /textures/*
-	header @textures >Cache-Control "public, max-age=604800"
+	@longCache path /textures/* /brand/* /og.jpg
+	header @longCache >Cache-Control "public, max-age=604800"
 
 	reverse_proxy {
 		dynamic a {

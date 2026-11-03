@@ -250,6 +250,15 @@ html[lang="en"] .band h1 {
   align-items: baseline;
 }
 
+/* The logo is a mask, so it takes the color of the text around it. */
+.logo {
+  display: inline-block;
+  flex: none;
+  background: currentColor;
+  mask: var(--logo-mark) center / contain no-repeat;
+  print-color-adjust: exact;
+}
+
 /* Top bar */
 .topbar {
   display: flex;

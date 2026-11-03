@@ -9,13 +9,6 @@ const SITE = process.env.E2E_BASE_URL ?? "https://localhost";
 /** Builds the artwork: Arabic title beside a slanted carbon panel holding the mark. */
 function artwork(): string {
   const ar = getMessages("ar");
-  const logo = `
-    <svg viewBox="0 0 96 60" width="256" height="160" fill="#fff" aria-hidden="true">
-      <path d="M4 40h7l-3 5H1zM13 33h7l-3 5h-7zM13 45h7l-3 5h-7zM22 40h7l-3 5h-7z"/>
-      <path d="M41 6h49l-7 11H47l-5 8h28l-7 11H35L25 52H10z"/>
-      <circle cx="74" cy="42" r="8.5" fill="none" stroke="#fff" stroke-width="5"/>
-      <circle cx="74" cy="42" r="13" fill="none" stroke="#fff" stroke-width="4.5" stroke-dasharray="5 5.2"/>
-    </svg>`;
   const checker = Array.from({ length: 22 }, (_, column) =>
     [0, 1, 2]
       .filter((row) => (row + column) % 2 === 0)
@@ -29,7 +22,7 @@ function artwork(): string {
       <div class="stripe stripe-taupe"></div>
       <div class="stripe stripe-teal"></div>
       <div class="stripe stripe-deep"></div>
-      <div class="mark">${logo}</div>
+      <img class="mark" src="/brand/logo-mark.png" alt="" />
       <div class="copy">
         <p class="kicker">${ar.home.kicker}</p>
         <h1>${ar.brand.name}</h1>
@@ -60,7 +53,7 @@ const STYLE = `
   .stripe-taupe { background: #9f895c; clip-path: polygon(452px 0, 480px 0, 292px 100%, 264px 100%); }
   .stripe-teal { background: #358b9a; clip-path: polygon(492px 0, 508px 0, 320px 100%, 304px 100%); }
   .stripe-deep { background: #2a636d; clip-path: polygon(520px 0, 572px 0, 384px 100%, 332px 100%); }
-  .mark { position: absolute; left: 44px; top: 232px; }
+  .mark { position: absolute; left: 30px; top: 246px; width: 288px; height: auto; }
   .copy { position: absolute; right: 64px; top: 104px; width: 600px; text-align: right; }
   .kicker { margin: 0 0 12px; color: #c8b382; font-size: 27px; font-weight: 700; }
   h1 { margin: 0; font-family: var(--font-kufi); font-weight: 700; font-size: 80px; line-height: 1.28; white-space: nowrap; }

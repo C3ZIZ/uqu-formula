@@ -12,7 +12,7 @@ export function TopBar({ locale }: { locale: Locale }) {
   return (
     <header className="topbar no-print">
       <Link className="brand" href={localePath(locale, PAGE_ROUTES.home)}>
-        <Logo size={26} />
+        <Logo size={22} />
         <span>{text.brand.name}</span>
       </Link>
       <LocaleSwitch locale={locale} label={text.nav.switchLocale} />

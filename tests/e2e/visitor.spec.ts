@@ -133,3 +133,15 @@ test("times never wrap inside the map sheet", async ({ page }) => {
   const lineHeight = await time.evaluate((node) => parseFloat(getComputedStyle(node).fontSize) * 2);
   expect(box?.height ?? 99).toBeLessThan(lineHeight);
 });
+
+test("the official logo and icon are served", async ({ page, request }) => {
+  for (const path of ["/brand/logo-mark.png", "/brand/icon.png"]) {
+    const response = await request.get(path);
+    expect(response.ok(), path).toBe(true);
+    expect(response.headers()["content-type"]).toContain("image/png");
+  }
+  await page.goto("/ar");
+  await expect(page.locator(".hero .logo")).toBeVisible();
+  const mask = await page.locator(".hero .logo").evaluate((node) => getComputedStyle(node).maskImage);
+  expect(mask).toContain("logo-mark.png");
+});

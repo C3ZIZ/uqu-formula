@@ -2,10 +2,11 @@
 "use client";
 
 import { MAP_GRID } from "@/config/event";
-import type { ZoneType } from "@/config/literals";
+import { QUERY_PARAMS, type ZoneType } from "@/config/literals";
 import type { Messages } from "@/config/messages";
 import { X } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 
 export interface MapZone {
   id: string;
@@ -21,7 +22,6 @@ export interface MapZone {
 
 interface VenueMapProps {
   zones: MapZone[];
-  initialZoneId?: string;
   text: Messages["map"];
   dayLabel: string;
 }
@@ -36,9 +36,18 @@ export function zoneStyle(zone: Pick<MapZone, "x" | "y" | "width" | "height">) {
   };
 }
 
+/** Opens the zone named in the address, as agenda links do. It runs in the browser so the page itself can be cached. */
+function ZoneFromAddress({ onFound }: { onFound: (zoneId: string) => void }) {
+  const zoneId = useSearchParams().get(QUERY_PARAMS.zone);
+  useEffect(() => {
+    if (zoneId) onFound(zoneId);
+  }, [zoneId, onFound]);
+  return null;
+}
+
 /** Shows the map and a list of the same zones for easier reading. */
-export function VenueMap({ zones, initialZoneId, text, dayLabel }: VenueMapProps) {
-  const [selectedId, setSelectedId] = useState(initialZoneId);
+export function VenueMap({ zones, text, dayLabel }: VenueMapProps) {
+  const [selectedId, setSelectedId] = useState<string>();
   const dialog = useRef<HTMLDialogElement>(null);
   const selected = zones.find((zone) => zone.id === selectedId);
 
@@ -54,6 +63,9 @@ export function VenueMap({ zones, initialZoneId, text, dayLabel }: VenueMapProps
 
   return (
     <div className="map-screen">
+      <Suspense>
+        <ZoneFromAddress onFound={setSelectedId} />
+      </Suspense>
       <div className="map-canvas" dir="ltr" style={{ aspectRatio: `${MAP_GRID.width} / ${MAP_GRID.height}` }}>
         <svg className="map-track" viewBox={`0 0 ${MAP_GRID.width} ${MAP_GRID.height}`} aria-hidden="true">
           <path d="M3 32 C3 2 10 2 50 2 S97 2 97 32 V110 C97 136 90 138 74 138 H26 C10 138 3 136 3 110 Z" />

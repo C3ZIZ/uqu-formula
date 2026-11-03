@@ -1,17 +1,24 @@
 // Hashes and checks passwords with scrypt from Node's standard library.
 import { randomBytes, scrypt, timingSafeEqual } from "node:crypto";
-import { SCRYPT } from "@/config/limits";
+import { LIMITS, SCRYPT } from "@/config/limits";
+import { createLimiter } from "./limiter";
 
 const FORMAT = "scrypt";
 
+// A rush of logins waits in line here, so pages stay fast for everyone else.
+const hashSlot = createLimiter(LIMITS.hashConcurrency);
+
 /** Runs scrypt in the background thread pool so it never blocks other requests. */
 function derive(password: string, salt: Buffer, N: number, r: number, p: number, length: number): Promise<Buffer> {
-  return new Promise((resolve, reject) => {
-    scrypt(password, salt, length, { N, r, p, maxmem: SCRYPT.maxmem }, (error, key) => {
-      if (error) reject(error);
-      else resolve(key);
-    });
-  });
+  return hashSlot(
+    () =>
+      new Promise((resolve, reject) => {
+        scrypt(password, salt, length, { N, r, p, maxmem: SCRYPT.maxmem }, (error, key) => {
+          if (error) reject(error);
+          else resolve(key);
+        });
+      }),
+  );
 }
 
 /** Turns a password into a salted hash that stores its own settings. */

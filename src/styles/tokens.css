@@ -23,6 +23,7 @@
   --fast: 140ms;
   --medium: 260ms;
 
+  --logo-mark: url("/brand/logo-mark.png");
   --asphalt: url("/textures/asphalt-track.webp");
   --carbon: url("/textures/carbon-weave.webp");
 }

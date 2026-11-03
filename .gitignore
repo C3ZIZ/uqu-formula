@@ -19,3 +19,6 @@ loadtest/results/
 # Editor and OS files
 .DS_Store
 .vscode/
+
+# Source identity file from Canva, kept outside the repository
+/*.svg

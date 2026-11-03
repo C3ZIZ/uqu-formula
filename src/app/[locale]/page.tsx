@@ -36,7 +36,7 @@ export default async function HomePage({ params }: LocaleProps) {
       <section className="band hero">
         <Slashes />
         <div className="content hero-inner">
-          <Logo size={54} />
+          <Logo size={64} />
           <p className="hero-kicker">{text.home.kicker}</p>
           <h1>{text.brand.name}</h1>
           <p className="hero-line">{text.home.headline}</p>
