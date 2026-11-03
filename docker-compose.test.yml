@@ -1,0 +1,17 @@
+# Throwaway PostgreSQL for integration tests. Data lives in memory only.
+services:
+  test-db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: formula
+      POSTGRES_PASSWORD: formula
+      POSTGRES_DB: formula_test
+    ports:
+      - "127.0.0.1:55432:5432"
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U formula -d formula_test"]
+      interval: 2s
+      timeout: 2s
+      retries: 20

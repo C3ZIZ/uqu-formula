@@ -1,0 +1,29 @@
+# Internal load balancer behind Coolify's proxy, which already handles HTTPS.
+{
+	auto_https off
+	admin off
+	servers {
+		trusted_proxies static private_ranges
+	}
+}
+
+:80 {
+	encode zstd gzip
+
+	header {
+		X-Content-Type-Options nosniff
+		X-Frame-Options DENY
+		Referrer-Policy strict-origin-when-cross-origin
+		Permissions-Policy "camera=(self), microphone=(), geolocation=()"
+		-Server
+	}
+
+	@longCache path /textures/* /brand/* /og.jpg
+	header @longCache >Cache-Control "public, max-age=604800"
+
+	reverse_proxy web1:3000 web2:3000 web3:3000 {
+		lb_policy round_robin
+		lb_try_duration 5s
+		fail_duration 10s
+	}
+}

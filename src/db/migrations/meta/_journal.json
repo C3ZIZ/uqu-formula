@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1793741314392,
+      "tag": "0000_sleepy_proudstar",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1793744752782,
+      "tag": "0001_amused_maximus",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793745487544,
+      "tag": "0002_self-check-in-text",
+      "breakpoints": true
+    }
+  ]
+}
