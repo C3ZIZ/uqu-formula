@@ -1,0 +1,114 @@
+// Database tables. The primary keys on check-ins and claims enforce the one-time rules.
+import { sql } from "drizzle-orm";
+import {
+  boolean,
+  check,
+  date,
+  index,
+  integer,
+  pgEnum,
+  pgTable,
+  primaryKey,
+  real,
+  text,
+  timestamp,
+  uuid,
+} from "drizzle-orm/pg-core";
+import { ROLE_LIST, ZONE_TYPES } from "@/config/literals";
+
+export const roleEnum = pgEnum("role", ROLE_LIST);
+export const zoneTypeEnum = pgEnum("zone_type", ZONE_TYPES);
+
+export const users = pgTable("users", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull(),
+  email: text("email").notNull().unique(),
+  phone: text("phone").notNull(),
+  passwordHash: text("password_hash").notNull(),
+  role: roleEnum("role").notNull().default("visitor"),
+  badgeCode: text("badge_code").notNull().unique(),
+  failedLogins: integer("failed_logins").notNull().default(0),
+  lockedUntil: timestamp("locked_until", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const passwordResets = pgTable("password_resets", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  tokenHash: text("token_hash").notNull().unique(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  usedAt: timestamp("used_at", { withTimezone: true }),
+});
+
+export const checkIns = pgTable(
+  "check_ins",
+  {
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    eventDate: date("event_date").notNull(),
+    checkedInBy: uuid("checked_in_by").references(() => users.id, { onDelete: "set null" }),
+    checkedInAt: timestamp("checked_in_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.eventDate] }), index("check_ins_date_idx").on(table.eventDate)],
+);
+
+export const zones = pgTable("zones", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  nameAr: text("name_ar").notNull(),
+  nameEn: text("name_en").notNull(),
+  detailsAr: text("details_ar").notNull().default(""),
+  detailsEn: text("details_en").notNull().default(""),
+  type: zoneTypeEnum("type").notNull(),
+  x: real("x").notNull(),
+  y: real("y").notNull(),
+  width: real("width").notNull(),
+  height: real("height").notNull(),
+});
+
+export const agendaItems = pgTable(
+  "agenda_items",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    titleAr: text("title_ar").notNull(),
+    titleEn: text("title_en").notNull(),
+    detailsAr: text("details_ar").notNull().default(""),
+    detailsEn: text("details_en").notNull().default(""),
+    day: integer("day").notNull(),
+    startTime: text("start_time").notNull(),
+    endTime: text("end_time").notNull(),
+    zoneId: uuid("zone_id").references(() => zones.id, { onDelete: "set null" }),
+  },
+  (table) => [index("agenda_day_time_idx").on(table.day, table.startTime)],
+);
+
+export const coinCodes = pgTable(
+  "coin_codes",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    token: text("token").notNull().unique(),
+    labelAr: text("label_ar").notNull(),
+    labelEn: text("label_en").notNull(),
+    coins: integer("coins").notNull(),
+    isActive: boolean("is_active").notNull().default(true),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [check("coin_codes_coins_positive", sql`${table.coins} > 0`)],
+);
+
+export const coinClaims = pgTable(
+  "coin_claims",
+  {
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    codeId: uuid("code_id")
+      .notNull()
+      .references(() => coinCodes.id, { onDelete: "restrict" }),
+    coins: integer("coins").notNull(),
+    claimedAt: timestamp("claimed_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.codeId] })],
+);

@@ -1,0 +1,86 @@
+# Production on Coolify: Coolify's proxy handles the domain and HTTPS, then Caddy balances three web replicas.
+# Replicas are separate services because Coolify names each container, which rules out deploy.replicas.
+
+x-web: &web
+  build:
+    context: .
+    target: web
+  restart: unless-stopped
+  environment:
+    DATABASE_URL: postgres://formula:${POSTGRES_PASSWORD}@db:5432/formula
+    SESSION_SECRET: ${SESSION_SECRET}
+    APP_URL: ${APP_URL}
+    COOKIE_SECURE: "true"
+    SMTP_HOST: ${SMTP_HOST:-localhost}
+    SMTP_PORT: ${SMTP_PORT:-587}
+    SMTP_USER: ${SMTP_USER:-}
+    SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+    MAIL_FROM: ${MAIL_FROM:-Formula Week <no-reply@ahafiz.sa>}
+  healthcheck:
+    test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+    interval: 10s
+    timeout: 5s
+    retries: 6
+    start_period: 15s
+  depends_on:
+    migrate:
+      condition: service_completed_successfully
+
+services:
+  proxy:
+    build:
+      context: .
+      target: proxy
+    restart: unless-stopped
+    expose:
+      - "80"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:80/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 20s
+    depends_on:
+      web1:
+        condition: service_healthy
+      web2:
+        condition: service_healthy
+      web3:
+        condition: service_healthy
+
+  web1: *web
+  web2: *web
+  web3: *web
+
+  migrate:
+    build:
+      context: .
+      target: tools
+    restart: "no"
+    environment:
+      DATABASE_URL: postgres://formula:${POSTGRES_PASSWORD}@db:5432/formula
+      SESSION_SECRET: ${SESSION_SECRET}
+      SEED_ADMIN_EMAIL: ${SEED_ADMIN_EMAIL}
+      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    command: ["postgres", "-c", "max_connections=100", "-c", "shared_buffers=256MB"]
+    environment:
+      POSTGRES_USER: formula
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: formula
+    volumes:
+      - formula-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U formula -d formula"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  formula-db-data:

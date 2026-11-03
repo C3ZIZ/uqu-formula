@@ -1,0 +1,29 @@
+/* Design tokens: the identity's colors, the type scale, spacing, and timing. */
+:root {
+  --ink: #0c272c;
+  --deep: #2a636d;
+  --teal: #358b9a;
+  --taupe: #9f895c;
+  --black: #000000;
+  --white: #ffffff;
+  --paper: #f6f5f1;
+  --muted: #4a5f63;
+  --muted-on-dark: #b9c8ca;
+  --line: rgb(12 39 44 / 16%);
+  --line-on-dark: rgb(255 255 255 / 18%);
+
+  --slant: 12px;
+  --gutter: clamp(20px, 5.5vw, 32px);
+  --content: 680px;
+  --nav-height: 64px;
+  --top-height: 56px;
+  --tap: 48px;
+
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --fast: 140ms;
+  --medium: 260ms;
+
+  --logo-mark: url("/brand/logo-mark.png");
+  --asphalt: url("/textures/asphalt-track.webp");
+  --carbon: url("/textures/carbon-weave.webp");
+}
