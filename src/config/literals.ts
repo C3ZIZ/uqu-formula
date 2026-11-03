@@ -13,6 +13,7 @@ export const ERROR_CODES = {
   notFound: "NOT_FOUND",
   lastAdmin: "LAST_ADMIN",
   codeHasClaims: "CODE_HAS_CLAIMS",
+  attendanceDateTaken: "ATTENDANCE_DATE_TAKEN",
   resetInvalid: "RESET_INVALID",
   server: "SERVER",
 } as const;
@@ -28,7 +29,13 @@ export const QUERY_PARAMS = { next: "next", token: "token", search: "q", page: "
 export const CLAIM_STATUS = { claimed: "claimed", already: "already", invalid: "invalid" } as const;
 export type ClaimStatus = (typeof CLAIM_STATUS)[keyof typeof CLAIM_STATUS];
 
-export const CHECK_IN_STATUS = { checkedIn: "checked_in", already: "already", unknown: "unknown" } as const;
+export const CHECK_IN_STATUS = {
+  checkedIn: "checked_in",
+  already: "already",
+  unknown: "unknown",
+  invalid: "invalid",
+  wrongDay: "wrong_day",
+} as const;
 export type CheckInStatus = (typeof CHECK_IN_STATUS)[keyof typeof CHECK_IN_STATUS];
 
 export const CODE_ALPHABET = "23456789ABCDEFGHJKMNPQRSTVWXYZ";

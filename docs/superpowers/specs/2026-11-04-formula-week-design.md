@@ -20,7 +20,7 @@ Success means:
 | Sign-in | Email and password, with password reset by email. |
 | Content editing | Admins edit the agenda, map zones, and coin codes in an admin panel. |
 | Coin rule | Admins create each code and set its coins. Each visitor can claim a code once. |
-| Attendance | Staff scan badges. One check-in per visitor per calendar day in Riyadh time. |
+| Attendance | Admins create one QR code per date. Visitors scan it at the entrance, and staff can also scan badges. One check-in per visitor per calendar day in Riyadh time. |
 | Redis | Left out. Replicas cache content in memory for 30 seconds. |
 
 Out of scope: leaderboard, prize redemption, native apps, offline mode.
@@ -73,6 +73,7 @@ loadtest/         k6 script
 | `agenda_items` | Arabic and English title and details, day number, start and end time, zone | |
 | `coin_codes` | Random token, Arabic and English label, coins, active flag | Token is unique |
 | `coin_claims` | Visitor, code, coins earned, time | Primary key on visitor and code |
+| `attendance_codes` | Random token, event date, active flag | One code per date, and the token is unique |
 
 ## Key flows
 
@@ -88,7 +89,11 @@ A claim stores the coin amount at claim time, so later edits to a code leave ear
 
 ### Check-in
 
-Staff scan a badge QR that holds the random badge code. The service inserts one row per visitor per Riyadh date. A repeat scan reports the earlier time instead of failing. The badge code reveals no personal data.
+An admin creates one attendance code per date and displays it at the entrance. A visitor scans it, and the flow matches a coin claim: opening the link changes nothing, logged-out visitors log in and return, and the browser sends a POST. A code works only on its own date in Riyadh time.
+
+Staff can also scan a badge QR that holds the random badge code. Both methods insert into the same table, one row per visitor per Riyadh date, so a repeat reports the earlier time instead of failing. The badge code reveals no personal data.
+
+A shared photo of the door code would let someone check in from elsewhere. The staff scanner remains the stricter option.
 
 ### Accounts
 
@@ -139,7 +144,8 @@ The site should feel like a race paddock and not a template.
 - **Coins:** total, scanner button, claim history.
 - **Scan result:** coins earned, already collected, or not valid.
 - **Staff check-in:** continuous scanner with immediate results.
-- **Admin:** dashboard counts, registrants with search and CSV, agenda, zones with click-to-place, coin codes with printable QR.
+- **Attendance result:** checked in, already checked in, another day, or not valid.
+- **Admin:** dashboard counts, registrants with search and CSV, agenda, zones with click-to-place, coin codes and daily attendance codes with printable QR.
 
 ## Error handling
 

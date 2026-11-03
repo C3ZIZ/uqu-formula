@@ -12,6 +12,7 @@ export const PAGE_ROUTES = {
   badge: "/badge",
   coins: "/coins",
   scan: (token: string) => `/scan/${encodeURIComponent(token)}`,
+  attend: (token: string) => `/attend/${encodeURIComponent(token)}`,
   staffCheckIn: "/staff/check-in",
   admin: "/admin",
   adminRegistrants: "/admin/registrants",
@@ -19,6 +20,8 @@ export const PAGE_ROUTES = {
   adminZones: "/admin/zones",
   adminCoinCodes: "/admin/coin-codes",
   adminCoinCodePrint: (id: string) => `/admin/coin-codes/${id}/print`,
+  adminAttendanceCodes: "/admin/attendance-codes",
+  adminAttendanceCodePrint: (id: string) => `/admin/attendance-codes/${id}/print`,
 } as const;
 
 export const API_ROUTES = {
@@ -30,6 +33,7 @@ export const API_ROUTES = {
   resetPassword: "/api/auth/reset-password",
   coinClaim: "/api/coins/claim",
   checkIn: "/api/staff/check-in",
+  attendanceCheckIn: "/api/attendance/check-in",
   adminRegistrantsCsv: "/api/admin/registrants/csv",
   adminUserRole: (id: string) => `/api/admin/users/${id}/role`,
   adminZones: "/api/admin/zones",
@@ -39,6 +43,9 @@ export const API_ROUTES = {
   adminCoinCodes: "/api/admin/coin-codes",
   adminCoinCode: (id: string) => `/api/admin/coin-codes/${id}`,
   adminCoinCodeQr: (id: string) => `/api/admin/coin-codes/${id}/qr`,
+  adminAttendanceCodes: "/api/admin/attendance-codes",
+  adminAttendanceCode: (id: string) => `/api/admin/attendance-codes/${id}`,
+  adminAttendanceCodeQr: (id: string) => `/api/admin/attendance-codes/${id}/qr`,
 } as const;
 
 // Files served from the public folder.
@@ -47,6 +54,7 @@ export const OG_IMAGE_SIZE = { width: 1200, height: 630 } as const;
 
 // Finds the code inside any scanned link to this site.
 export const SCAN_LINK_PATTERN = /\/scan\/([^/?#]+)\/?(?:[?#].*)?$/;
+export const ATTEND_LINK_PATTERN = /\/attend\/([^/?#]+)\/?(?:[?#].*)?$/;
 
 /** Adds the language prefix to a page path. */
 export function localePath(locale: Locale, path: string): string {

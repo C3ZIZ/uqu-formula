@@ -55,6 +55,10 @@ export const coinCodeSchema = z.object({
   isActive: z.boolean().default(true),
 });
 
+export const attendanceCodeSchema = z.object({ eventDate: z.iso.date() });
+
+export const attendanceCodeUpdateSchema = z.object({ isActive: z.boolean() });
+
 export const agendaSchema = z
   .object({
     titleAr: shortText,
@@ -85,5 +89,6 @@ export const zoneSchema = z
 
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type CoinCodeInput = z.infer<typeof coinCodeSchema>;
+export type AttendanceCodeInput = z.infer<typeof attendanceCodeSchema>;
 export type AgendaInput = z.infer<typeof agendaSchema>;
 export type ZoneInput = z.infer<typeof zoneSchema>;

@@ -5,7 +5,7 @@ import { LIMITS } from "@/config/limits";
 import { generateBadgeCode, generateCoinToken } from "@/lib/codes";
 import { riyadhDate } from "@/lib/dates";
 import { qrSvg } from "@/lib/qr";
-import { normalizeCode, parseCoinPayload } from "@/lib/qr-payload";
+import { normalizeCode, parseCoinPayload, parseScanTarget } from "@/lib/qr-payload";
 import { safeNextPath } from "@/lib/safe-redirect";
 
 describe("riyadhDate", () => {
@@ -47,6 +47,31 @@ describe("parseCoinPayload", () => {
 
   it.each(["hello world", "https://evil.com/phish", "", "FW!"])("rejects %s", (value) => {
     expect(parseCoinPayload(value)).toBeNull();
+  });
+});
+
+describe("parseScanTarget", () => {
+  it("recognizes a coin link wherever the scanner was opened", () => {
+    expect(parseScanTarget("https://site.example/scan/ABCD2345EFGH", "attendance")).toEqual({
+      kind: "coin",
+      token: "ABCD2345EFGH",
+    });
+  });
+
+  it("recognizes an attendance link wherever the scanner was opened", () => {
+    expect(parseScanTarget("https://site.example/en/attend/ABCD2345EFGH", "coin")).toEqual({
+      kind: "attendance",
+      token: "ABCD2345EFGH",
+    });
+  });
+
+  it("treats a typed code as the kind the scanner expects", () => {
+    expect(parseScanTarget("abcd2345efgh", "attendance")).toEqual({ kind: "attendance", token: "ABCD2345EFGH" });
+    expect(parseScanTarget("abcd2345efgh", "coin")).toEqual({ kind: "coin", token: "ABCD2345EFGH" });
+  });
+
+  it.each(["hello world", "https://evil.com/phish", ""])("rejects %s", (value) => {
+    expect(parseScanTarget(value, "coin")).toBeNull();
   });
 });
 

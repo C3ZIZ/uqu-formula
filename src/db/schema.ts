@@ -112,3 +112,12 @@ export const coinClaims = pgTable(
   },
   (table) => [primaryKey({ columns: [table.userId, table.codeId] })],
 );
+
+// One door code per event date. Scans are recorded in check_ins, shared with the staff scanner.
+export const attendanceCodes = pgTable("attendance_codes", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  token: text("token").notNull().unique(),
+  eventDate: date("event_date").notNull().unique(),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});

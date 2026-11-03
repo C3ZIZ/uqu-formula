@@ -1,6 +1,7 @@
 // The electronic badge: name and personal QR on a real carbon backing.
 import { CircleCheck, CircleDashed } from "lucide-react";
 import { LogoutButton } from "@/components/LogoutButton";
+import { ScanButton } from "@/components/ScanButton";
 import { getMessages } from "@/config/messages";
 import { localePath, PAGE_ROUTES } from "@/config/routes";
 import { requireUser } from "@/lib/auth";
@@ -26,6 +27,11 @@ export default async function BadgePage({ params }: LocaleProps) {
           {attended ? <CircleCheck size={20} aria-hidden="true" /> : <CircleDashed size={20} aria-hidden="true" />}
           {attended ? text.badge.attended : text.badge.notAttended}
         </p>
+        {attended ? null : (
+          <div className="badge-scan">
+            <ScanButton locale={locale} expected="attendance" scanLabel={text.badge.scanAttendance} text={text.scanner} />
+          </div>
+        )}
         <div className="badge-qr" dangerouslySetInnerHTML={{ __html: qr }} role="img" aria-label={text.badge.code} />
         <p className="badge-instruction">{text.badge.instruction}</p>
         <p className="badge-code">
