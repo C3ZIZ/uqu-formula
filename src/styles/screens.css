@@ -126,7 +126,7 @@ html[lang="en"] .band.hero h1 {
 
 /* Agenda */
 .agenda {
-  margin-block-start: -12px;
+  margin-block-start: 8px;
 }
 
 .day-tabs {
@@ -231,7 +231,7 @@ html[lang="en"] .band.hero h1 {
 
 /* Map */
 .map-screen {
-  margin-block-start: -12px;
+  margin-block-start: 8px;
 }
 
 .map-canvas {
@@ -303,7 +303,7 @@ html[lang="en"] .band.hero h1 {
 }
 
 .map-zone--services {
-  background: var(--paper);
+  background: var(--muted-on-dark);
   color: var(--ink);
 }
 
@@ -336,10 +336,11 @@ html[lang="en"] .band.hero h1 {
 }
 
 .zone-swatch {
-  width: 22px;
+  flex: none;
+  width: 20px;
   height: 16px;
-  outline: 1px solid var(--line);
-  clip-path: polygon(20% 0, 100% 0, 80% 100%, 0 100%);
+  border: 1px solid var(--ink);
+  transform: skewX(-14deg);
 }
 
 .sheet {
@@ -393,7 +394,7 @@ html[lang="en"] .band.hero h1 {
 
 .sheet-session {
   display: grid;
-  grid-template-columns: 64px 1fr;
+  grid-template-columns: 84px 1fr;
   gap: 8px;
 }
 
@@ -450,6 +451,8 @@ html[lang="en"] .band.hero h1 {
 }
 
 .badge-qr {
+  justify-self: center;
+  width: min(100%, 42dvh);
   background: var(--white);
   padding: 8px;
 }
@@ -473,7 +476,6 @@ html[lang="en"] .band.hero h1 {
 .badge-status {
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 8px;
   color: var(--muted-on-dark);
   font-size: 0.9375rem;
@@ -657,4 +659,244 @@ html[lang="en"] .band.hero h1 {
 
 .claim-working {
   font-size: 1.125rem;
+}
+
+/* Staff check-in */
+.desk {
+  display: grid;
+  gap: 16px;
+  margin-block-start: 8px;
+}
+
+.desk-count {
+  font-weight: 500;
+}
+
+.desk-count b {
+  font-size: 1.5rem;
+}
+
+.desk-result:empty {
+  display: none;
+}
+
+.result {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 14px 16px;
+  animation: rise var(--fast) var(--ease-out);
+}
+
+.result > span {
+  display: grid;
+}
+
+.result-name {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.result--good {
+  background: var(--deep);
+  color: var(--white);
+}
+
+.result--warn {
+  background: var(--taupe);
+  color: var(--black);
+}
+
+.result--bad {
+  background: var(--black);
+  color: var(--white);
+}
+
+/* Admin */
+.admin-tabs {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  padding-inline: var(--gutter);
+  background: var(--deep);
+  scrollbar-width: none;
+}
+
+.admin-tabs a {
+  flex: none;
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+  padding-inline: 12px;
+  color: var(--white);
+  font-size: 0.9375rem;
+  text-decoration: none;
+}
+
+.admin-tabs a[aria-current="page"] {
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 6px;
+}
+
+.stats {
+  margin-block-start: 8px;
+}
+
+.stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  padding-block: 16px;
+  border-block-end: 1px solid var(--line);
+}
+
+.stat dd {
+  font-size: 2rem;
+  line-height: 1.1;
+}
+
+.band-actions {
+  margin-block-start: 14px;
+}
+
+.search {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: end;
+  margin-block-end: 16px;
+}
+
+.registrant-contact {
+  font-size: 0.875rem;
+  text-align: start;
+}
+
+[dir="rtl"] .registrant-contact {
+  text-align: end;
+}
+
+.registrant-foot {
+  align-items: center;
+  margin-block-start: 4px;
+}
+
+.role-select {
+  min-width: 112px;
+}
+
+.role-select select {
+  min-height: 44px;
+  font-size: 0.9375rem;
+}
+
+.pager {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-block-start: 16px;
+}
+
+.resource {
+  margin-block-start: 8px;
+}
+
+.resource-form {
+  padding-block: 8px 24px;
+}
+
+.resource-error {
+  margin-block-start: 16px;
+}
+
+.resource-empty {
+  margin-block-start: 20px;
+}
+
+.resource-list {
+  margin-block-start: 12px;
+}
+
+.resource-actions {
+  margin-block-start: 2px;
+  column-gap: 18px;
+}
+
+.code-token {
+  letter-spacing: 0.04em;
+}
+
+.placement {
+  width: min(100%, 300px);
+  margin-inline: 0;
+  margin-block-start: 8px;
+  cursor: crosshair;
+}
+
+.placement-other,
+.placement-current {
+  position: absolute;
+}
+
+.placement-other {
+  background: rgb(255 255 255 / 22%);
+}
+
+.placement-current {
+  background: var(--taupe);
+  transition:
+    left var(--medium) var(--ease-out),
+    top var(--medium) var(--ease-out);
+}
+
+/* Printable coin code */
+.print-page {
+  background: var(--white);
+}
+
+.print-sheet {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding-block: 28px;
+  text-align: center;
+}
+
+.print-sheet h1 {
+  font-size: 1.75rem;
+}
+
+.print-coins {
+  font-size: 1.25rem;
+}
+
+.print-coins b {
+  font-size: 2.25rem;
+}
+
+.print-qr {
+  width: min(100%, 420px);
+}
+
+.print-qr svg {
+  width: 100%;
+  height: auto;
+}
+
+.print-actions {
+  justify-content: center;
+}
+
+@media print {
+  .page {
+    padding: 0;
+    animation: none;
+  }
+
+  .print-qr {
+    width: 14cm;
+  }
 }

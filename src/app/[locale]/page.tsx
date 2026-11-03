@@ -43,7 +43,7 @@ export default async function HomePage({ params }: LocaleProps) {
           {visitor ? (
             <>
               <p className="hero-greeting">
-                {text.home.greeting}، {visitor.name}
+                {text.home.greeting} {visitor.name}
               </p>
               <dl className="hero-coins">
                 <dt>{text.home.yourCoins}</dt>

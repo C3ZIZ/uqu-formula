@@ -3,7 +3,7 @@ import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTypescript from "eslint-config-next/typescript";
 import jsdoc from "eslint-plugin-jsdoc";
 
-export default [
+const config = [
   { ignores: [".next/**", "node_modules/**", "src/db/migrations/**", "next-env.d.ts", ".superpowers/**"] },
   ...nextVitals,
   ...nextTypescript,
@@ -24,3 +24,5 @@ export default [
     },
   },
 ];
+
+export default config;

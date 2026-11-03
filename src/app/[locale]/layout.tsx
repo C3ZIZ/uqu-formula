@@ -4,8 +4,10 @@ import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { BottomNav } from "@/components/BottomNav";
 import { TopBar } from "@/components/TopBar";
-import { LOCALE_DIRECTION } from "@/config/locales";
+import { LOCALE_DIRECTION, OG_LOCALES } from "@/config/locales";
 import { getMessages } from "@/config/messages";
+import { ASSET_PATHS, OG_IMAGE_SIZE } from "@/config/routes";
+import { getEnv } from "@/lib/env";
 import { pageLocale, type LocaleProps } from "@/lib/page";
 import "@/styles/tokens.css";
 import "@/styles/base.css";
@@ -25,10 +27,22 @@ export const viewport: Viewport = { themeColor: "#0c272c", viewportFit: "cover",
 
 /** Sets the page title and description for the current language. */
 export async function generateMetadata({ params }: LocaleProps): Promise<Metadata> {
-  const text = getMessages(await pageLocale(params));
+  const locale = await pageLocale(params);
+  const text = getMessages(locale);
   return {
+    metadataBase: new URL(getEnv().APP_URL),
     title: { default: text.brand.name, template: `%s · ${text.brand.name}` },
     description: text.meta.description,
+    icons: { icon: ASSET_PATHS.icon },
+    openGraph: {
+      type: "website",
+      siteName: text.brand.name,
+      title: text.brand.name,
+      description: text.meta.description,
+      locale: OG_LOCALES[locale],
+      images: [{ url: ASSET_PATHS.ogImage, ...OG_IMAGE_SIZE, alt: text.meta.ogAlt }],
+    },
+    twitter: { card: "summary_large_image", title: text.brand.name, description: text.meta.description, images: [ASSET_PATHS.ogImage] },
   };
 }
 

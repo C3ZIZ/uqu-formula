@@ -32,7 +32,7 @@
     linear-gradient(rgb(12 39 44 / 86%), rgb(12 39 44 / 92%)),
     var(--asphalt) center / 320px;
   color: var(--white);
-  padding-block: 28px 56px;
+  padding-block: 28px 64px;
   clip-path: polygon(0 0, 100% 0, 100% calc(100% - 28px), 0 100%);
 }
 
@@ -57,13 +57,18 @@ html[lang="en"] .band h1 {
   position: absolute;
   inset-block-end: 0;
   inset-inline-start: -8px;
-  width: min(62vw, 300px);
+  width: min(38vw, 170px);
   height: auto;
   pointer-events: none;
 }
 
 [dir="rtl"] .slashes {
   transform: scaleX(-1);
+}
+
+.hero .slashes,
+.claim .slashes {
+  width: min(62vw, 300px);
 }
 
 /* Slanted buttons echo the parallelograms in the identity. */

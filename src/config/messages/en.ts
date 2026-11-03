@@ -8,6 +8,7 @@ export const en: Messages = {
     organizer: "Engineering & Architecture Club · Umm Al-Qura University",
   },
   meta: {
+    ogAlt: "Formula Week at Umm Al-Qura University",
     description: "The Formula Week site at Umm Al-Qura University: agenda, map, badge, and coin collecting.",
   },
   nav: {
@@ -34,7 +35,7 @@ export const en: Messages = {
     ctaLogin: "I have an account",
     ctaBadge: "Show my badge",
     ctaAgenda: "See the agenda",
-    greeting: "Welcome",
+    greeting: "Welcome,",
     yourCoins: "Your coin balance",
     stepsTitle: "Your event, step by step",
     stepRegister: "Create your account and get your badge",

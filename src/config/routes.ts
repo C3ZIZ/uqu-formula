@@ -41,6 +41,10 @@ export const API_ROUTES = {
   adminCoinCodeQr: (id: string) => `/api/admin/coin-codes/${id}/qr`,
 } as const;
 
+// Files served from the public folder.
+export const ASSET_PATHS = { ogImage: "/og.jpg", icon: "/icon.svg" } as const;
+export const OG_IMAGE_SIZE = { width: 1200, height: 630 } as const;
+
 // Finds the code inside any scanned link to this site.
 export const SCAN_LINK_PATTERN = /\/scan\/([^/?#]+)\/?(?:[?#].*)?$/;
 
