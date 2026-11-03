@@ -23,7 +23,7 @@ export const COOKIES = { session: "fw_session", locale: "fw_locale" } as const;
 export const ZONE_TYPES = ["stage", "workshop", "booth", "competition", "services", "entrance"] as const;
 export type ZoneType = (typeof ZONE_TYPES)[number];
 
-export const QUERY_PARAMS = { next: "next", token: "token", search: "q", page: "page", locale: "locale" } as const;
+export const QUERY_PARAMS = { next: "next", token: "token", search: "q", page: "page", locale: "locale", zone: "zone" } as const;
 
 export const CLAIM_STATUS = { claimed: "claimed", already: "already", invalid: "invalid" } as const;
 export type ClaimStatus = (typeof CLAIM_STATUS)[keyof typeof CLAIM_STATUS];
