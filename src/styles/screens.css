@@ -462,6 +462,14 @@ html[lang="en"] .band.hero h1 {
   height: auto;
 }
 
+.badge-scan {
+  display: grid;
+}
+
+.badge-scan .button {
+  width: 100%;
+}
+
 .badge-instruction {
   text-align: center;
   font-weight: 500;

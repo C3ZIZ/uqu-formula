@@ -1,23 +1,24 @@
-// The full-screen scanner a visitor opens from the coins screen.
+// A button that opens the full-screen scanner for coin or attendance codes.
 "use client";
 
 import type { Locale } from "@/config/locales";
 import type { Messages } from "@/config/messages";
 import { localePath, PAGE_ROUTES } from "@/config/routes";
-import { parseCoinPayload } from "@/lib/qr-payload";
+import { parseScanTarget, type ScanKind } from "@/lib/qr-payload";
 import { ScanLine, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { QrScanner } from "./QrScanner";
 
-interface CoinScannerProps {
+interface ScanButtonProps {
   locale: Locale;
+  expected: ScanKind;
   scanLabel: string;
   text: Messages["scanner"];
 }
 
-/** Opens the camera and moves to the claim screen when a coin code is read. */
-export function CoinScanner({ locale, scanLabel, text }: CoinScannerProps) {
+/** Opens the camera and moves to the matching screen once a code is read. */
+export function ScanButton({ locale, expected, scanLabel, text }: ScanButtonProps) {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string>();
   const dialog = useRef<HTMLDialogElement>(null);
@@ -34,14 +35,15 @@ export function CoinScanner({ locale, scanLabel, text }: CoinScannerProps) {
     setError(undefined);
   }
 
-  /** Accepts a coin code, or explains that the code was not recognized. */
+  /** Accepts a code, or explains that it was not recognized. */
   function handleResult(value: string) {
-    const token = parseCoinPayload(value);
-    if (!token) {
+    const target = parseScanTarget(value, expected);
+    if (!target) {
       setError(text.notRecognized);
       return;
     }
-    router.push(localePath(locale, PAGE_ROUTES.scan(token)));
+    const route = target.kind === "coin" ? PAGE_ROUTES.scan(target.token) : PAGE_ROUTES.attend(target.token);
+    router.push(localePath(locale, route));
   }
 
   return (

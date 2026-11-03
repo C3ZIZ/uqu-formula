@@ -12,7 +12,7 @@ export type FormValues = Record<string, string | number | boolean | null>;
 export interface FieldSpec {
   name: string;
   label: string;
-  kind: "text" | "textarea" | "number" | "time" | "select";
+  kind: "text" | "textarea" | "number" | "time" | "date" | "select";
   options?: { value: string; label: string }[];
   latin?: boolean;
 }
@@ -26,6 +26,7 @@ interface ResourceManagerProps<T extends { id: string }> {
   toValues: (item: T) => FormValues;
   renderItem: (item: T) => ReactNode;
   renderActions?: (item: T, refresh: () => void) => ReactNode;
+  hideEdit?: boolean;
   renderFormExtra?: (values: FormValues, setValues: (changes: FormValues) => void) => ReactNode;
   text: Messages["admin"];
   errors: Messages["errors"];
@@ -75,7 +76,7 @@ function FormField({ spec, value, invalid, invalidText, onChange }: {
 /** Lists items and handles adding, editing, and two-step deleting. */
 export function ResourceManager<T extends { id: string }>(props: ResourceManagerProps<T>) {
   const { items, fields, emptyValues, createUrl, itemUrl, toValues, renderItem, renderActions, renderFormExtra } = props;
-  const { text, errors, fieldErrors } = props;
+  const { text, errors, fieldErrors, hideEdit } = props;
   const router = useRouter();
   const [editing, setEditing] = useState<string | null>(null);
   const [values, setValuesState] = useState<FormValues>(emptyValues);
@@ -184,9 +185,11 @@ export function ResourceManager<T extends { id: string }>(props: ResourceManager
               <>
                 {renderItem(item)}
                 <div className="actions resource-actions">
-                  <button type="button" className="text-action" onClick={() => open(item.id, toValues(item))}>
-                    {text.form.edit}
-                  </button>
+                  {hideEdit ? null : (
+                    <button type="button" className="text-action" onClick={() => open(item.id, toValues(item))}>
+                      {text.form.edit}
+                    </button>
+                  )}
                   {renderActions?.(item, refresh)}
                   <button type="button" className="text-action" onClick={() => remove(item.id)}>
                     {confirming === item.id ? text.form.confirmDelete : text.form.delete}
