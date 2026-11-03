@@ -36,6 +36,22 @@ npm run test:e2e                                         # phone-size browser te
 npm run lint && npm run typecheck
 ```
 
+## Load test results
+
+The scenario is 1000 virtual visitors who all log in within 60 seconds, browse for two minutes with pauses, and sometimes claim coins. The pass mark is 95% of requests under 800 ms with under 1% failures. Run it with `loadtest/run.sh`.
+
+| Setup | 95th percentile | Failures | Result |
+|---|---|---|---|
+| Three web processes on a 10-core Mac, with PostgreSQL and k6 in Docker, run 1 | 6.7 ms | 0 of 33,787 | Pass |
+| Same setup, run 2 | About 6 ms | 0 of 33,912 | Pass |
+| Full Docker stack with Caddy on a 1-CPU OrbStack VM | Over 23 s | 5.3% | Fail |
+
+What these results show:
+
+- **Size the host for the login rush.** The web tier used about 2.5 cores during the rush and about 0.5 core afterward, with about 1 GB of memory. Plan for at least 4 CPU cores. One CPU is not enough.
+- **Other work on the machine matters.** Two earlier runs missed the pass mark, with a 95th percentile of 816 ms and 871 ms and no failures, while builds and other jobs ran on the same machine.
+- **Production has not been load tested.** The passing runs skipped Caddy and HTTPS and ran on Mac cores. The production server also hosts other applications, so a test there needs a planned window.
+
 ## Project rules
 
 - All visitor text lives in `src/config/messages`. All routes live in `src/config/routes.ts`. Limits and other literals live in `src/config`.
@@ -71,7 +87,7 @@ Set these environment variables in Coolify. Never commit them.
 | `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD` | First admin. The seed never changes an existing account |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `MAIL_FROM` | Password reset email |
 
-Changing `APP_URL` after printing means reprinting the coin codes, because each QR holds the full address.
+The domain must use HTTPS, because login cookies are marked secure. Changing `APP_URL` after printing means reprinting all QR codes, because each one holds the full address.
 
 ## Regenerate the preview image
 
