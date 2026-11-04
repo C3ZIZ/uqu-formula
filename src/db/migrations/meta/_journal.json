@@ -43,6 +43,13 @@
       "when": 1793783098197,
       "tag": "0005_place-links",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793783547151,
+      "tag": "0006_challenge-badges",
+      "breakpoints": true
     }
   ]
 }

@@ -3,6 +3,7 @@ import { sql } from "drizzle-orm";
 import {
   boolean,
   check,
+  customType,
   date,
   index,
   integer,
@@ -12,12 +13,21 @@ import {
   real,
   text,
   timestamp,
+  uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
-import { ROLE_LIST, ZONE_TYPES } from "@/config/literals";
+import { BADGE_KINDS, ROLE_LIST, ZONE_TYPES } from "@/config/literals";
 
 export const roleEnum = pgEnum("role", ROLE_LIST);
 export const zoneTypeEnum = pgEnum("zone_type", ZONE_TYPES);
+export const badgeKindEnum = pgEnum("badge_kind", BADGE_KINDS);
+
+const bytea = customType<{ data: Buffer }>({
+  /** Names the PostgreSQL column type for binary data. */
+  dataType() {
+    return "bytea";
+  },
+});
 
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -121,3 +131,48 @@ export const attendanceCodes = pgTable("attendance_codes", {
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+// Challenge badges carry a code. The one all-days badge has none, because attendance decides who earned it.
+export const badges = pgTable(
+  "badges",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    kind: badgeKindEnum("kind").notNull(),
+    token: text("token").unique(),
+    nameAr: text("name_ar").notNull(),
+    nameEn: text("name_en").notNull(),
+    challengeAr: text("challenge_ar").notNull().default(""),
+    challengeEn: text("challenge_en").notNull().default(""),
+    icon: text("icon").notNull(),
+    imageUpdatedAt: timestamp("image_updated_at", { withTimezone: true }),
+    isActive: boolean("is_active").notNull().default(true),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("badges_one_all_days").on(table.kind).where(sql`${table.kind} = 'all_days'`),
+    check("badges_token_matches_kind", sql`(${table.kind} = 'challenge') = (${table.token} IS NOT NULL)`),
+  ],
+);
+
+// Images sit in their own table, so listing badges never loads them.
+export const badgeImages = pgTable("badge_images", {
+  badgeId: uuid("badge_id")
+    .primaryKey()
+    .references(() => badges.id, { onDelete: "cascade" }),
+  data: bytea("data").notNull(),
+  contentType: text("content_type").notNull(),
+});
+
+export const badgeClaims = pgTable(
+  "badge_claims",
+  {
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    badgeId: uuid("badge_id")
+      .notNull()
+      .references(() => badges.id, { onDelete: "restrict" }),
+    claimedAt: timestamp("claimed_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.badgeId] })],
+);

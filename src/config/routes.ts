@@ -21,6 +21,8 @@ export const PAGE_ROUTES = {
   adminCoinCodePrint: (id: string) => `/admin/coin-codes/${id}/print`,
   adminAttendanceCodes: "/admin/attendance-codes",
   adminAttendanceCodePrint: (id: string) => `/admin/attendance-codes/${id}/print`,
+  adminBadges: "/admin/badges",
+  adminBadgePrint: (id: string) => `/admin/badges/${id}/print`,
 } as const;
 
 export const API_ROUTES = {
@@ -44,6 +46,11 @@ export const API_ROUTES = {
   adminAttendanceCodes: "/api/admin/attendance-codes",
   adminAttendanceCode: (id: string) => `/api/admin/attendance-codes/${id}`,
   adminAttendanceCodeQr: (id: string) => `/api/admin/attendance-codes/${id}/qr`,
+  adminBadges: "/api/admin/badges",
+  adminBadge: (id: string) => `/api/admin/badges/${id}`,
+  adminBadgeQr: (id: string) => `/api/admin/badges/${id}/qr`,
+  badgeClaim: "/api/badges/claim",
+  badgeImage: (id: string, version: number) => `/api/badges/${id}/image?v=${version}`,
 } as const;
 
 // Files served from the public folder.

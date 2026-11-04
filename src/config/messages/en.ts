@@ -79,6 +79,7 @@ export const en: Messages = {
     NOT_FOUND: "This item does not exist.",
     LAST_ADMIN: "The last admin cannot lose admin access.",
     ATTENDANCE_DATE_TAKEN: "A code already exists for this date. Print it, or delete it and create another.",
+    ALL_DAYS_BADGE_TAKEN: "An all-days badge already exists. You can edit it instead of creating another.",
     IN_USE: "This cannot be deleted because other items are linked to it.",
     RESET_INVALID: "This link is invalid or has expired. Request a new one.",
     SERVER: "Something went wrong on our side. Try again.",

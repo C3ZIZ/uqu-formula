@@ -90,6 +90,10 @@ Every code follows `UQU-<WORD>-<6 characters>`, where UQU stands for Umm Al-Qura
 
 A typed code matches in any letter case, with or without dashes. A migration replaces all existing codes, so anything printed before it must be printed again. Registration retries if a new visitor code happens to be taken.
 
+## Map and motion polish
+
+The list of areas under the map is removed, because the map already names every place and opens its details on tap. Motion is added where it explains something, and every animation respects reduced-motion settings.
+
 ## Testing
 
 Integration tests cover earning, repeats, simultaneous scans, the all-days rule, switched-off badges, image validation, every delete rule, and the migration's staff conversion. End-to-end tests on a phone viewport cover creating and earning a badge, the delete warning, the agenda sections, and the not-found page.

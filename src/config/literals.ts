@@ -13,6 +13,7 @@ export const ERROR_CODES = {
   notFound: "NOT_FOUND",
   lastAdmin: "LAST_ADMIN",
   inUse: "IN_USE",
+  allDaysBadgeTaken: "ALL_DAYS_BADGE_TAKEN",
   attendanceDateTaken: "ATTENDANCE_DATE_TAKEN",
   resetInvalid: "RESET_INVALID",
   server: "SERVER",
@@ -38,6 +39,13 @@ export const CHECK_IN_STATUS = {
 } as const;
 export type CheckInStatus = (typeof CHECK_IN_STATUS)[keyof typeof CHECK_IN_STATUS];
 
+export const BADGE_KINDS_BY_NAME = { challenge: "challenge", allDays: "all_days" } as const;
+export const BADGE_KINDS = [BADGE_KINDS_BY_NAME.challenge, BADGE_KINDS_BY_NAME.allDays] as const;
+export type BadgeKind = (typeof BADGE_KINDS)[number];
+export const BADGE_ICONS = ["trophy", "flag", "gauge", "timer", "medal", "award", "star", "zap", "wrench", "route", "target", "crown"] as const;
+export type BadgeIcon = (typeof BADGE_ICONS)[number];
+export const BADGE_IMAGE_TYPES = { png: "image/png", jpeg: "image/jpeg", webp: "image/webp" } as const;
+
 export const CODE_ALPHABET = "23456789ABCDEFGHJKMNPQRSTVWXYZ";
 export const CODE_PREFIX = "UQU";
 export const CODE_KINDS = { visitor: "visitor", coin: "coin", attendance: "attendance", badge: "badge" } as const;
@@ -48,5 +56,5 @@ export const CODE_WORDS: Record<CodeKind, string> = { visitor: "RACER", coin: "P
 export const CSV_FILE_NAME = "formula-week-registrants.csv";
 export const JWT_ALGORITHM = "HS256";
 export const CONTENT_TYPES = { csv: "text/csv; charset=utf-8", svg: "image/svg+xml" } as const;
-export const HEADERS = { origin: "origin", host: "host", forwardedHost: "x-forwarded-host" } as const;
+export const HEADERS = { origin: "origin", host: "host", forwardedHost: "x-forwarded-host", contentTypeOptions: "X-Content-Type-Options" } as const;
 export const QR_OPTIONS = { margin: 2, errorCorrectionLevel: "M", darkColor: "#0c272c", lightColor: "#ffffff" } as const;

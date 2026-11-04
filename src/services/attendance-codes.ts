@@ -8,6 +8,7 @@ import { isForeignKeyViolation, type DeleteOutcome } from "@/lib/delete-links";
 import { riyadhDate } from "@/lib/dates";
 import { normalizeCode } from "@/lib/qr-payload";
 import type { AttendanceCodeInput, AttendanceCodeUpdate } from "@/lib/validation";
+import { completedAllDaysBadge } from "./badges";
 
 /** Records attendance from a scanned code, only on the code's own date at the venue. */
 export async function checkInWithCode(userId: string, rawToken: string, now: Date = new Date()) {
@@ -26,7 +27,10 @@ export async function checkInWithCode(userId: string, rawToken: string, now: Dat
     .values({ userId, eventDate: code.eventDate, checkedInAt: now })
     .onConflictDoNothing()
     .returning({ userId: checkIns.userId });
-  if (inserted.length > 0) return { status: CHECK_IN_STATUS.checkedIn } as const;
+  if (inserted.length > 0) {
+    const allDaysBadge = await completedAllDaysBadge(userId);
+    return { status: CHECK_IN_STATUS.checkedIn, ...(allDaysBadge ? { allDaysBadge } : {}) } as const;
+  }
 
   const [existing] = await db
     .select({ at: checkIns.checkedInAt })

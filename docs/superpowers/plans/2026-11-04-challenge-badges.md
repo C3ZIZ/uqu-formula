@@ -155,3 +155,15 @@ Runs before Task 4, which needs the generator.
 - [ ] Watch them fail.
 - [ ] Implement, and generate the data migration.
 - [ ] Run the suite. Commit.
+
+### Task 10: Map cleanup and motion polish
+
+Uses the ui-ux-pro-max skill. Runs after Task 7.
+
+**Files:**
+- Modify: `src/components/VenueMap.tsx`, messages, `src/styles/`, `tests/e2e/visitor.spec.ts`
+
+- [ ] Write a failing e2e test: the map page has no area list, and a zone still opens from the map.
+- [ ] Watch it fail, remove the list and its text and styles.
+- [ ] Add motion where it explains a change, checked with phone screenshots, and keep reduced-motion support.
+- [ ] Run the suite. Commit.
