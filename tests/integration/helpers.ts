@@ -8,7 +8,7 @@ import { registerUser } from "@/services/users";
 export async function resetDatabase(): Promise<void> {
   await runMigrations();
   await db.execute(
-    sql`TRUNCATE users, password_resets, check_ins, zones, agenda_items, coin_codes, coin_claims, attendance_codes CASCADE`,
+    sql`TRUNCATE users, password_resets, check_ins, zones, agenda_items, coin_codes, coin_claims, attendance_codes, badges, badge_images, badge_claims CASCADE`,
   );
 }
 

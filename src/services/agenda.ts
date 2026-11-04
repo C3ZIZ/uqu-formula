@@ -20,11 +20,6 @@ export function getAgenda(): Promise<AgendaItem[]> {
   return cache.get();
 }
 
-/** Clears the cached agenda after a change that affects it. */
-export function clearAgendaCache(): void {
-  cache.invalidate();
-}
-
 /** Adds an agenda item. */
 export async function createAgendaItem(input: AgendaInput): Promise<AgendaItem> {
   const [item] = await db.insert(agendaItems).values(input).returning();

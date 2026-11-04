@@ -1,8 +1,8 @@
 // Creates the first admin and, on an empty database, sample content. Safe to run repeatedly.
 import { fileURLToPath } from "node:url";
 import { count } from "drizzle-orm";
-import { ROLES } from "@/config/literals";
-import { generateBadgeCode, generateCoinToken } from "@/lib/codes";
+import { CODE_KINDS, ROLES } from "@/config/literals";
+import { generateCode } from "@/lib/codes";
 import { hashPassword } from "@/lib/password";
 import { db, pool } from "./client";
 import { SAMPLE_AGENDA, SAMPLE_COIN_CODES, SAMPLE_ZONES } from "./sample-content";
@@ -18,7 +18,7 @@ async function seedAdmin(email: string, password: string): Promise<void> {
       phone: "0000000000",
       passwordHash: await hashPassword(password),
       role: ROLES.admin,
-      badgeCode: generateBadgeCode(),
+      badgeCode: generateCode(CODE_KINDS.visitor),
     })
     .onConflictDoNothing({ target: users.email });
 }
@@ -43,7 +43,7 @@ async function seedContent(): Promise<void> {
 async function seedCoinCodes(): Promise<void> {
   const [existing] = await db.select({ value: count() }).from(coinCodes);
   if (existing.value > 0) return;
-  await db.insert(coinCodes).values(SAMPLE_COIN_CODES.map((code) => ({ ...code, token: generateCoinToken() })));
+  await db.insert(coinCodes).values(SAMPLE_COIN_CODES.map((code) => ({ ...code, token: generateCode(CODE_KINDS.coin) })));
 }
 
 /** Runs all seed steps. */

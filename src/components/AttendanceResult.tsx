@@ -7,10 +7,12 @@ import type { Messages } from "@/config/messages";
 import { API_ROUTES, localePath, PAGE_ROUTES } from "@/config/routes";
 import { sendJson } from "@/lib/client-api";
 import { formatDateTime } from "@/lib/dates";
+import { pickLocalized } from "@/lib/localized";
 import { CalendarX, CircleCheck, CircleX, History } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Slashes } from "./Slashes";
+import { StartLights } from "./StartLights";
 
 const VIBRATE_MS = 120;
 
@@ -24,6 +26,7 @@ interface AttendanceResultProps {
 interface CheckInReply {
   status: CheckInStatus;
   at?: string;
+  allDaysBadge?: { nameAr: string; nameEn: string };
 }
 
 /** Checks in on arrival. The ref stops a repeat request when React re-runs the effect. */
@@ -58,7 +61,12 @@ export function AttendanceResult({ locale, token, text, errors }: AttendanceResu
       ) : null}
       <Slashes />
       <div className="content claim-inner">
-        {!reply && !failure ? <p className="claim-working">{text.working}</p> : null}
+        {!reply && !failure ? (
+          <>
+            <StartLights />
+            <p className="claim-working">{text.working}</p>
+          </>
+        ) : null}
 
         {failure ? (
           <>
@@ -75,6 +83,11 @@ export function AttendanceResult({ locale, token, text, errors }: AttendanceResu
             <CircleCheck size={56} strokeWidth={1.5} aria-hidden="true" />
             <h1>{text.checkedIn}</h1>
             <p className="lead">{text.checkedInLead}</p>
+            {reply.allDaysBadge ? (
+              <p className="claim-total">
+                {text.allDaysBadge}: <b>{pickLocalized(locale, reply.allDaysBadge.nameAr, reply.allDaysBadge.nameEn)}</b>
+              </p>
+            ) : null}
           </>
         ) : null}
 

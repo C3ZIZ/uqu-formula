@@ -1,12 +1,21 @@
 // Tests small helpers: dates, redirects, scanned text, generated codes, and QR output.
 import { describe, expect, it } from "vitest";
-import { CODE_ALPHABET } from "@/config/literals";
-import { LIMITS } from "@/config/limits";
-import { generateBadgeCode, generateCoinToken } from "@/lib/codes";
-import { riyadhDate } from "@/lib/dates";
+import { CODE_KINDS } from "@/config/literals";
+import { generateCode } from "@/lib/codes";
+import { agendaOpenDay, riyadhDate } from "@/lib/dates";
 import { qrSvg } from "@/lib/qr";
-import { normalizeCode, parseCoinPayload, parseScanTarget } from "@/lib/qr-payload";
+import { normalizeCode, parseScanTarget } from "@/lib/qr-payload";
 import { safeNextPath } from "@/lib/safe-redirect";
+
+describe("agendaOpenDay", () => {
+  it("opens today's section during the event", () => {
+    expect(agendaOpenDay("2026-12-14")).toBe(2);
+  });
+
+  it("opens the first day at any other time", () => {
+    expect(agendaOpenDay("2026-11-04")).toBe(1);
+  });
+});
 
 describe("riyadhDate", () => {
   it("rolls over at Riyadh midnight, three hours before UTC midnight", () => {
@@ -32,84 +41,69 @@ describe("safeNextPath", () => {
   );
 });
 
-describe("parseCoinPayload", () => {
-  it("accepts a bare token", () => {
-    expect(parseCoinPayload("ABCD2345EFGH")).toBe("ABCD2345EFGH");
-  });
-
-  it("uppercases a typed token and trims it", () => {
-    expect(parseCoinPayload("  abcd2345efgh ")).toBe("ABCD2345EFGH");
-  });
-
-  it("accepts a token typed with Arabic digits", () => {
-    expect(parseCoinPayload("abcd٢٣٤٥efgh")).toBe("ABCD2345EFGH");
-  });
-
-  it("reads the token from a full link", () => {
-    expect(parseCoinPayload("https://site.example/scan/ABCD2345EFGH")).toBe("ABCD2345EFGH");
-  });
-
-  it("reads the token from a language link", () => {
-    expect(parseCoinPayload("https://site.example/en/scan/ABCD2345EFGH?x=1")).toBe("ABCD2345EFGH");
-  });
-
-  it.each(["hello world", "https://evil.com/phish", "", "FW!"])("rejects %s", (value) => {
-    expect(parseCoinPayload(value)).toBeNull();
-  });
-});
-
 describe("parseScanTarget", () => {
   it("recognizes a coin link", () => {
-    expect(parseScanTarget("https://site.example/scan/ABCD2345EFGH")).toEqual({ kind: "coin", token: "ABCD2345EFGH" });
+    expect(parseScanTarget("https://site.example/scan/UQU-PIT-7K3Q9M")).toEqual({ kind: "coin", token: "UQU-PIT-7K3Q9M" });
   });
 
   it("recognizes an attendance link", () => {
-    expect(parseScanTarget("https://site.example/en/attend/ABCD2345EFGH")).toEqual({
+    expect(parseScanTarget("https://site.example/en/attend/UQU-GRID-7K3Q9M")).toEqual({
       kind: "attendance",
-      token: "ABCD2345EFGH",
+      token: "UQU-GRID-7K3Q9M",
     });
   });
 
-  it("sends a typed code to the coin screen, which forwards attendance codes", () => {
-    expect(parseScanTarget("abcd2345efgh")).toEqual({ kind: "coin", token: "ABCD2345EFGH" });
+  it("reads a language link with extra parameters", () => {
+    expect(parseScanTarget("https://site.example/en/scan/UQU-PODIUM-7K3Q9M?x=1")?.token).toBe("UQU-PODIUM-7K3Q9M");
   });
 
-  it.each(["hello world", "https://evil.com/phish", ""])("rejects %s", (value) => {
-    expect(parseScanTarget(value)).toBeNull();
+  it("sends a typed code to the scan screen, which routes it", () => {
+    expect(parseScanTarget("uqu grid 7k3q9m")).toEqual({ kind: "coin", token: "UQU-GRID-7K3Q9M" });
   });
+
+  it.each(["hello world", "https://evil.com/phish", "", "FW!", "ABCD2345EFGH", "UQU-RACER-7K3Q9M", "UQU-PIT-7K3"])(
+    "rejects %s",
+    (value) => {
+      expect(parseScanTarget(value)).toBeNull();
+    },
+  );
 });
 
 describe("normalizeCode", () => {
-  it("uppercases, trims, and removes dashes", () => {
-    expect(normalizeCode(" fw-abc ")).toBe("FWABC");
+  it.each([
+    ["UQU-GRID-7K3Q9M", "UQU-GRID-7K3Q9M"],
+    ["  uqu-grid-7k3q9m ", "UQU-GRID-7K3Q9M"],
+    ["uqugrid7k3q9m", "UQU-GRID-7K3Q9M"],
+    ["UQU PODIUM 7K3Q9M", "UQU-PODIUM-7K3Q9M"],
+    ["uqu-pit-٧k٣q٩m", "UQU-PIT-7K3Q9M"],
+  ])("reads %s the same way", (typed, expected) => {
+    expect(normalizeCode(typed)).toBe(expected);
   });
 
-  it("converts Arabic digits typed on an Arabic keyboard", () => {
-    expect(normalizeCode("fw٢٣-a٧")).toBe("FW23A7");
+  it("leaves unrelated text compact and uppercase", () => {
+    expect(normalizeCode(" fw-abc ")).toBe("FWABC");
   });
 });
 
 describe("generated codes", () => {
-  const allowed = new RegExp(`^[${CODE_ALPHABET}]+$`);
-
-  it("makes coin tokens from the safe alphabet", () => {
-    const token = generateCoinToken();
-    expect(token).toHaveLength(LIMITS.coinCodeLength);
-    expect(token).toMatch(allowed);
+  it.each([
+    [CODE_KINDS.visitor, /^UQU-RACER-[2-9A-HJKMNP-TV-Z]{6}$/],
+    [CODE_KINDS.coin, /^UQU-PIT-[2-9A-HJKMNP-TV-Z]{6}$/],
+    [CODE_KINDS.attendance, /^UQU-GRID-[2-9A-HJKMNP-TV-Z]{6}$/],
+    [CODE_KINDS.badge, /^UQU-PODIUM-[2-9A-HJKMNP-TV-Z]{6}$/],
+  ])("makes a %s code in the right format", (kind, pattern) => {
+    expect(generateCode(kind)).toMatch(pattern);
   });
 
-  it("makes badge codes with the prefix", () => {
-    expect(generateBadgeCode()).toMatch(/^FW[2-9A-Z]{10}$/);
-  });
-
-  it("does not repeat", () => {
-    const tokens = new Set(Array.from({ length: 500 }, generateCoinToken));
+  it("rarely repeats", () => {
+    const tokens = new Set(Array.from({ length: 500 }, () => generateCode(CODE_KINDS.coin)));
     expect(tokens.size).toBe(500);
   });
 
-  it("round-trips a generated token through the payload parser", () => {
-    const token = generateCoinToken();
-    expect(parseCoinPayload(token)).toBe(token);
+  it("keeps a generated code unchanged when it is read back", () => {
+    const token = generateCode(CODE_KINDS.badge);
+    expect(normalizeCode(token)).toBe(token);
+    expect(parseScanTarget(token)?.token).toBe(token);
   });
 });
 

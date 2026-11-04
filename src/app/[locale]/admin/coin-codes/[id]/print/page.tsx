@@ -8,6 +8,7 @@ import { getMessages } from "@/config/messages";
 import { localePath, PAGE_ROUTES } from "@/config/routes";
 import { getEnv } from "@/lib/env";
 import { pickLocalized } from "@/lib/localized";
+import { requireAdmin } from "@/lib/auth";
 import { pageLocale } from "@/lib/page";
 import { qrSvg } from "@/lib/qr";
 import { getCoinCode } from "@/services/coins";
@@ -19,6 +20,7 @@ interface PrintProps {
 /** Shows the code large, with its coins, label, and typed fallback. */
 export default async function PrintCoinCodePage({ params }: PrintProps) {
   const locale = await pageLocale(params);
+  await requireAdmin(locale);
   const { id } = await params;
   const code = z.uuid().safeParse(id).success ? await getCoinCode(id) : undefined;
   if (!code) notFound();

@@ -2,12 +2,14 @@
 import { PageBand } from "@/components/PageBand";
 import { CoinCodesManager } from "@/components/admin/CoinCodesManager";
 import { getMessages } from "@/config/messages";
+import { requireAdmin } from "@/lib/auth";
 import { pageLocale, type LocaleProps } from "@/lib/page";
 import { listCoinCodes } from "@/services/coins";
 
 /** Lists all coin codes and how often each was collected. */
 export default async function AdminCoinCodesPage({ params }: LocaleProps) {
   const locale = await pageLocale(params);
+  await requireAdmin(locale);
   const text = getMessages(locale);
   return (
     <main className="page">

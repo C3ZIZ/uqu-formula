@@ -25,7 +25,7 @@ describe("registration", () => {
   it("creates a visitor with a badge code", async () => {
     const result = await registerUser(INPUT);
     expect(result).toMatchObject({ ok: true, user: { role: "visitor" } });
-    if (result.ok) expect(result.user.badgeCode).toMatch(/^FW/);
+    if (result.ok) expect(result.user.badgeCode).toMatch(/^UQU-RACER-/);
   });
 
   it("refuses the same email again", async () => {
@@ -139,7 +139,7 @@ describe("roles and registrant list", () => {
     const [first, second] = [await makeUser(), await makeUser()];
     await setUserRole(first.id, "admin");
     await setUserRole(second.id, "admin");
-    expect(await setUserRole(first.id, "staff")).toEqual({ ok: true });
+    expect(await setUserRole(first.id, "visitor")).toEqual({ ok: true });
   });
 
   it("searches by name, email, and phone", async () => {

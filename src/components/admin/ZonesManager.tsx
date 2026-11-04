@@ -83,6 +83,7 @@ export function ZonesManager({ locale, items, text, typeLabels, errors, fieldErr
 
   return (
     <ResourceManager
+      locale={locale}
       items={items}
       fields={fields}
       emptyValues={{ nameAr: "", nameEn: "", detailsAr: "", detailsEn: "", type: ZONE_TYPES[0], ...DEFAULT_ZONE }}

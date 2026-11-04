@@ -2,14 +2,13 @@
 import type { ReactNode } from "react";
 import { AdminTabs } from "@/components/admin/AdminTabs";
 import { getMessages } from "@/config/messages";
-import { localePath, PAGE_ROUTES } from "@/config/routes";
-import { ADMIN_ROLES, requireRole } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth";
 import { pageLocale, type LocaleProps } from "@/lib/page";
 
-/** Checks the admin role on every admin page. */
+/** Adds the tabs for admins. Each page also checks the role itself, because this check does not protect page data. */
 export default async function AdminLayout({ children, params }: LocaleProps & { children: ReactNode }) {
   const locale = await pageLocale(params);
-  await requireRole(locale, localePath(locale, PAGE_ROUTES.admin), ADMIN_ROLES);
+  await requireAdmin(locale);
   const text = getMessages(locale);
   return (
     <>

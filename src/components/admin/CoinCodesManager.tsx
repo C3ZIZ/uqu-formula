@@ -47,6 +47,7 @@ export function CoinCodesManager({ locale, items, unit, text, errors, fieldError
 
   return (
     <ResourceManager
+      locale={locale}
       items={items}
       fields={fields}
       emptyValues={{ labelAr: "", labelEn: "", coins: "", isActive: true }}
