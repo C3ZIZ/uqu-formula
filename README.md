@@ -2,7 +2,9 @@
 
 The event website for Formula Week at Umm Al-Qura University. It is Arabic-first with English support and built for phones.
 
-Visitors register, follow the agenda, find places on a map, show a QR badge, collect coins, and scan a daily code at the entrance to record attendance. Admins manage content, coin and attendance codes, roles, and the registrant list.
+Visitors register, follow the agenda, find places on a map, show a QR badge, collect coins and challenge badges, and scan a daily code at the entrance to record attendance. Admins manage content, codes, badges, roles, and the registrant list.
+
+Every code follows one format, `UQU-<WORD>-<6 characters>`, where the Formula word shows its purpose: `RACER` for a visitor, `PIT` for coins, `GRID` for attendance, and `PODIUM` for a challenge badge.
 
 ## Stack
 
@@ -57,6 +59,7 @@ What these results show:
 - All visitor text lives in `src/config/messages`. All routes live in `src/config/routes.ts`. Limits and other literals live in `src/config`.
 - Every file starts with a one-line comment, and every function has a short comment.
 - Tests and lint fail when these rules break.
+- Anything still linked to something else cannot be deleted. The refusal names the links.
 - Git work follows `git-guide.md`.
 
 ## Where things live
@@ -65,7 +68,7 @@ What these results show:
 src/config/       routes, literals, limits, event data, ar and en messages
 src/db/           schema, migrations, seed, sample content
 src/lib/          helpers: passwords, sessions, validation, CSV, QR, cache
-src/services/     business rules: users, coins, check-ins, agenda, zones
+src/services/     business rules: users, coins, badges, check-ins, agenda, zones
 src/components/   shared interface parts
 src/app/[locale]/ pages for each language
 src/app/api/      JSON API
