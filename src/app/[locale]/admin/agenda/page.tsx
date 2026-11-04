@@ -2,6 +2,7 @@
 import { PageBand } from "@/components/PageBand";
 import { AgendaManager } from "@/components/admin/AgendaManager";
 import { getMessages } from "@/config/messages";
+import { agendaOpenDay, riyadhDate } from "@/lib/dates";
 import { pageLocale, type LocaleProps } from "@/lib/page";
 import { loadAgenda } from "@/services/agenda";
 import { loadZones } from "@/services/zones";
@@ -22,6 +23,7 @@ export default async function AdminAgendaPage({ params }: LocaleProps) {
         errors={text.errors}
         fieldErrors={text.fieldErrors}
         dayLabel={text.agenda.day}
+        openDay={agendaOpenDay(riyadhDate())}
       />
     </main>
   );

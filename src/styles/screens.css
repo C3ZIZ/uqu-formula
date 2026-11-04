@@ -764,6 +764,64 @@ html[lang="en"] .band.hero h1 {
   margin-block-start: 12px;
 }
 
+/* Agenda sections */
+.agenda-days {
+  display: grid;
+  margin-block-start: 16px;
+}
+
+.agenda-day {
+  border-block-end: 1px solid var(--line);
+}
+
+.agenda-day-toggle {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+  min-height: 64px;
+  padding: 10px var(--gutter);
+  background: none;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+  transition: background-color var(--fast) var(--ease-out);
+}
+
+.agenda-day-toggle:active {
+  background: var(--line);
+}
+
+.agenda-day-name {
+  display: grid;
+  flex: 1;
+}
+
+.agenda-day-name b {
+  font-size: 1.125rem;
+}
+
+.agenda-day-count {
+  color: var(--muted);
+  font-size: 0.9375rem;
+}
+
+.agenda-day-chevron {
+  flex: none;
+  transition: transform var(--medium) var(--ease-out);
+}
+
+.agenda-day-toggle[aria-expanded="true"] .agenda-day-chevron {
+  transform: rotate(180deg);
+}
+
+.agenda-day-panel {
+  padding-block-end: 16px;
+  animation: rise var(--medium) var(--ease-out);
+}
+
 .delete-blocked {
   margin-block-start: 10px;
   font-weight: 500;

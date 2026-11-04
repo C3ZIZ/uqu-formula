@@ -2,10 +2,20 @@
 import { describe, expect, it } from "vitest";
 import { CODE_KINDS } from "@/config/literals";
 import { generateCode } from "@/lib/codes";
-import { riyadhDate } from "@/lib/dates";
+import { agendaOpenDay, riyadhDate } from "@/lib/dates";
 import { qrSvg } from "@/lib/qr";
 import { normalizeCode, parseScanTarget } from "@/lib/qr-payload";
 import { safeNextPath } from "@/lib/safe-redirect";
+
+describe("agendaOpenDay", () => {
+  it("opens today's section during the event", () => {
+    expect(agendaOpenDay("2026-12-14")).toBe(2);
+  });
+
+  it("opens the first day at any other time", () => {
+    expect(agendaOpenDay("2026-11-04")).toBe(1);
+  });
+});
 
 describe("riyadhDate", () => {
   it("rolls over at Riyadh midnight, three hours before UTC midnight", () => {

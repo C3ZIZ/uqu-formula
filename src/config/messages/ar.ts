@@ -255,6 +255,7 @@ export const ar = {
       checkIns: "سجلوا حضورهم",
       printHint: "امسح الكود بكاميرا الجوال لتسجيل حضورك",
     },
+    agendaCount: "فعالية",
     deleteBlocked: {
       title: "لا يمكن الحذف لأنه مرتبط بما يلي:",
       agendaItem: "فعالية في الأجندة",

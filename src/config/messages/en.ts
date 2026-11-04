@@ -256,6 +256,7 @@ export const en: Messages = {
       checkIns: "Checked in",
       printHint: "Scan with your phone camera to check in",
     },
+    agendaCount: "items",
     deleteBlocked: {
       title: "This cannot be deleted because it is linked to:",
       agendaItem: "Agenda item",

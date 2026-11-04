@@ -54,33 +54,56 @@ test("an admin creates a coin code in the panel, and a visitor can claim it", as
   await expect(page.locator(".form-error")).toContainText("لا يمكن الحذف");
 });
 
-test("an admin edits the agenda and the change reaches visitors", async ({ page }) => {
+test("an admin edits one day of the agenda, sorted by time, and the change reaches visitors", async ({ page }) => {
   await page.goto("/ar/login");
   await loginByForm(page, ADMIN.email, ADMIN.password);
   await expect(page).toHaveURL(/\/ar$/);
   await page.goto("/ar/admin/agenda");
-  await page.getByRole("button", { name: "إضافة" }).click();
-  const title = `فقرة ${Date.now()}`;
-  await page.getByLabel("العنوان بالعربية").fill(title);
-  await page.getByLabel("العنوان بالإنجليزية").fill("New session");
-  await page.getByLabel("يبدأ").fill("18:00");
-  await page.getByLabel("ينتهي").fill("17:00");
-  await page.getByRole("button", { name: "حفظ" }).click();
-  await expect(page.getByText("القيمة غير صحيحة.")).toBeVisible();
-  await page.getByLabel("ينتهي").fill("19:00");
-  await page.getByRole("button", { name: "حفظ" }).click();
-  await expect(page.locator(".resource-list")).toContainText(title);
+
+  const dayTwo = page.locator(".agenda-day", { hasText: "اليوم 2" });
+  const dayTwoToggle = dayTwo.locator(".agenda-day-toggle");
+  await expect(dayTwoToggle).toHaveAttribute("aria-expanded", "false");
+  await dayTwoToggle.click();
+  await expect(dayTwoToggle).toHaveAttribute("aria-expanded", "true");
+
+  /** Adds an item to day two through its own form. */
+  async function addItem(title: string, start: string, end: string) {
+    await dayTwo.getByRole("button", { name: "إضافة" }).click();
+    await dayTwo.getByLabel("العنوان بالعربية").fill(title);
+    await dayTwo.getByLabel("العنوان بالإنجليزية").fill("New session");
+    await dayTwo.getByLabel("يبدأ").fill(start);
+    await dayTwo.getByLabel("ينتهي").fill(end);
+    await dayTwo.getByRole("button", { name: "حفظ" }).click();
+  }
+
+  const stamp = Date.now();
+  const [late, early] = [`فقرة متأخرة ${stamp}`, `فقرة مبكرة ${stamp}`];
+  await addItem(late, "18:00", "17:00");
+  await expect(dayTwo.getByText("القيمة غير صحيحة.")).toBeVisible();
+  await dayTwo.getByLabel("ينتهي").fill("19:00");
+  await dayTwo.getByRole("button", { name: "حفظ" }).click();
+  await expect(dayTwo.locator(".resource-list")).toContainText(late);
+  await addItem(early, "06:00", "07:00");
+  await expect(dayTwo.locator(".resource-list")).toContainText(early);
+
+  const titles = await dayTwo.locator(".resource-list li b").allTextContents();
+  expect(titles.indexOf(early)).toBeLessThan(titles.indexOf(late));
+  expect(titles.indexOf(early)).toBe(0);
 
   await expect(async () => {
     await page.goto("/ar/agenda");
-    await expect(page.getByRole("heading", { name: title })).toBeVisible({ timeout: 1000 });
+    await page.getByRole("tab", { name: /2/ }).click();
+    await expect(page.getByRole("heading", { name: late })).toBeVisible({ timeout: 1000 });
   }).toPass({ timeout: 40_000 });
 
   await page.goto("/ar/admin/agenda");
-  const row = page.locator(".resource-list li", { hasText: title });
-  await row.getByRole("button", { name: "حذف" }).click();
-  await row.getByRole("button", { name: "اضغط مرة أخرى للتأكيد" }).click();
-  await expect(page.locator(".resource-list")).not.toContainText(title);
+  await dayTwoToggle.click();
+  for (const title of [late, early]) {
+    const row = dayTwo.locator(".resource-list li", { hasText: title });
+    await row.getByRole("button", { name: "حذف" }).click();
+    await row.getByRole("button", { name: "اضغط مرة أخرى للتأكيد" }).click();
+    await expect(dayTwo.locator(".resource-list")).not.toContainText(title);
+  }
 });
 
 test("an admin places a new zone by tapping the map", async ({ page }) => {
