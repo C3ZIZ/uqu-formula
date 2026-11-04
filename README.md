@@ -27,7 +27,7 @@ docker compose up -d --build --wait
 - Site: <https://localhost> (the browser warns about the local certificate)
 - Caught emails: <http://localhost:8025>
 
-Migrations and the seed run automatically. The seed creates the admin from `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD`. Sample content is added to an empty database only when `SEED_SAMPLE_CONTENT` is `true`, which the local stack sets and production does not.
+Migrations and the seed run automatically. The seed creates the admin from `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD`. Sample content is added to an empty database only when `SEED_SAMPLE_CONTENT` is `true`.
 
 ## Test
 
@@ -88,6 +88,7 @@ Set these environment variables in Coolify. Never commit them.
 | `SESSION_SECRET` | Signs login cookies, at least 32 characters |
 | `APP_URL` | Public address, used in printed QR codes and reset emails |
 | `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD` | First admin. The seed never changes an existing account |
+| `SEED_SAMPLE_CONTENT` | `true` adds sample places, agenda, and coin codes whenever those tables are empty, including after each deploy. Set it to `false` before entering real content |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `MAIL_FROM` | Password reset email |
 
 The domain must use HTTPS, because login cookies are marked secure. Changing `APP_URL` after printing means reprinting all QR codes, because each one holds the full address.

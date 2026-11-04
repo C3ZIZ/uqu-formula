@@ -2,7 +2,7 @@
 import { AttendanceResult } from "@/components/AttendanceResult";
 import { getMessages } from "@/config/messages";
 import { localePath, PAGE_ROUTES } from "@/config/routes";
-import { requireSession } from "@/lib/auth";
+import { requireUser } from "@/lib/auth";
 import { pageLocale } from "@/lib/page";
 
 interface AttendProps {
@@ -14,7 +14,7 @@ export default async function AttendPage({ params }: AttendProps) {
   const locale = await pageLocale(params);
   const { token } = await params;
   const decoded = decodeURIComponent(token);
-  await requireSession(locale, localePath(locale, PAGE_ROUTES.attend(decoded)));
+  await requireUser(locale, localePath(locale, PAGE_ROUTES.attend(decoded)));
   const text = getMessages(locale);
   return (
     <main className="page">

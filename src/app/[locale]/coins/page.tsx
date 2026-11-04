@@ -5,7 +5,7 @@ import { Slashes } from "@/components/Slashes";
 import { BADGE_KINDS_BY_NAME } from "@/config/literals";
 import { getMessages } from "@/config/messages";
 import { localePath, PAGE_ROUTES } from "@/config/routes";
-import { requireSession } from "@/lib/auth";
+import { requireUser } from "@/lib/auth";
 import { formatDateTime } from "@/lib/dates";
 import { pickLocalized } from "@/lib/localized";
 import { pageLocale, type LocaleProps } from "@/lib/page";
@@ -16,8 +16,8 @@ import { getCoinSummary } from "@/services/coins";
 export default async function CoinsPage({ params }: LocaleProps) {
   const locale = await pageLocale(params);
   const text = getMessages(locale);
-  const session = await requireSession(locale, localePath(locale, PAGE_ROUTES.coins));
-  const [summary, badges] = await Promise.all([getCoinSummary(session.userId, locale), getVisitorBadges(session.userId)]);
+  const user = await requireUser(locale, localePath(locale, PAGE_ROUTES.coins));
+  const [summary, badges] = await Promise.all([getCoinSummary(user.id, locale), getVisitorBadges(user.id)]);
 
   return (
     <main className="page">
