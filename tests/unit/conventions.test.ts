@@ -7,7 +7,7 @@ const SOURCE_DIRS = ["src", "tests", "loadtest"];
 const SOURCE_FILE = /\.(ts|tsx|css|js)$/;
 const ARABIC = /[؀-ۿ]/;
 const ROUTE_LITERAL =
-  /["'`]\/(api|ar|en|login|register|agenda|map|badge|coins|admin|staff|scan|attend|forgot-password|reset-password)(\/|["'`])/;
+  /["'`]\/(api|ar|en|login|register|agenda|map|badge|coins|admin|scan|attend|forgot-password|reset-password)(\/|["'`])/;
 const TEXT_ALLOWED = ["src/config/", "src/db/sample-content.ts", "tests/"];
 const ROUTES_ALLOWED = ["src/config/routes.ts", "tests/", "loadtest/"];
 
@@ -50,5 +50,21 @@ describe("project conventions", () => {
     const allowed = (file: string) => ROUTES_ALLOWED.some((prefix) => file.startsWith(prefix));
     const offenders = files.filter((file) => !allowed(file) && ROUTE_LITERAL.test(readFileSync(file, "utf8")));
     expect(offenders).toEqual([]);
+  });
+});
+
+describe("admin page access", () => {
+  const pages = listFiles("src/app/[locale]/admin").filter((file) => file.endsWith("page.tsx"));
+
+  it("finds the admin pages", () => {
+    expect(pages.length).toBeGreaterThan(0);
+  });
+
+  it.each(pages)("%s checks the role itself before anything else", (file) => {
+    const source = readFileSync(file, "utf8");
+    const body = source.slice(source.indexOf("export default async function"));
+    const lines = body.split("\n").map((line) => line.trim());
+    expect(lines[1]).toBe("const locale = await pageLocale(params);");
+    expect(lines[2]).toBe("await requireAdmin(locale);");
   });
 });

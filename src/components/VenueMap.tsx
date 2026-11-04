@@ -6,7 +6,7 @@ import { QUERY_PARAMS, type ZoneType } from "@/config/literals";
 import type { Messages } from "@/config/messages";
 import { X } from "lucide-react";
 import { useSearchParams } from "next/navigation";
-import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 
 export interface MapZone {
   id: string;
@@ -45,7 +45,7 @@ function ZoneFromAddress({ onFound }: { onFound: (zoneId: string) => void }) {
   return null;
 }
 
-/** Shows the map and a list of the same zones for easier reading. */
+/** Shows the map, whose places name themselves and open their details on tap. */
 export function VenueMap({ zones, text, dayLabel }: VenueMapProps) {
   const [selectedId, setSelectedId] = useState<string>();
   const dialog = useRef<HTMLDialogElement>(null);
@@ -70,12 +70,12 @@ export function VenueMap({ zones, text, dayLabel }: VenueMapProps) {
         <svg className="map-track" viewBox={`0 0 ${MAP_GRID.width} ${MAP_GRID.height}`} aria-hidden="true">
           <path d="M3 32 C3 2 10 2 50 2 S97 2 97 32 V110 C97 136 90 138 74 138 H26 C10 138 3 136 3 110 Z" />
         </svg>
-        {zones.map((zone) => (
+        {zones.map((zone, index) => (
           <button
             key={zone.id}
             type="button"
-            className={`map-zone map-zone--${zone.type}`}
-            style={zoneStyle(zone)}
+            className={`map-zone map-zone--${zone.type}${zone.id === selectedId ? " map-zone--selected" : ""}`}
+            style={{ ...zoneStyle(zone), "--reveal": index } as CSSProperties}
             aria-haspopup="dialog"
             onClick={() => setSelectedId(zone.id)}
           >
@@ -84,21 +84,6 @@ export function VenueMap({ zones, text, dayLabel }: VenueMapProps) {
         ))}
       </div>
       <p className="map-notice content">{text.sampleNotice}</p>
-
-      <section className="content section">
-        <h2 className="section-title">{text.listTitle}</h2>
-        <ul className="rows">
-          {zones.map((zone) => (
-            <li key={zone.id}>
-              <button type="button" className="zone-row" onClick={() => setSelectedId(zone.id)}>
-                <span className={`zone-swatch map-zone--${zone.type}`} aria-hidden="true" />
-                <span className="zone-row-name">{zone.name}</span>
-                <span className="lead">{text.types[zone.type]}</span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      </section>
 
       <dialog
         ref={dialog}

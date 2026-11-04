@@ -71,6 +71,30 @@ html[lang="en"] .band h1 {
   width: min(62vw, 300px);
 }
 
+/* The identity's shapes slide into the corner once, when the home screen opens. */
+.hero .slashes path {
+  animation: slash-in 620ms var(--ease-out) backwards;
+}
+
+.hero .slashes path:nth-child(2) {
+  animation-delay: 70ms;
+}
+
+.hero .slashes path:nth-child(3) {
+  animation-delay: 140ms;
+}
+
+.hero .slashes path:nth-child(4) {
+  animation-delay: 210ms;
+}
+
+@keyframes slash-in {
+  from {
+    opacity: 0;
+    transform: translate(26px, 32px);
+  }
+}
+
 /* Slanted buttons echo the parallelograms in the identity. */
 .button {
   display: inline-flex;

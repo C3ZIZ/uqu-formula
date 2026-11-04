@@ -9,9 +9,10 @@ import {
   deleteAttendanceCode,
   isAttendanceToken,
   listAttendanceCodes,
-  setAttendanceCodeActive,
+  updateAttendanceCode,
 } from "@/services/attendance-codes";
-import { checkInByBadge, getAttendanceDays } from "@/services/checkins";
+import { getAttendanceDays } from "@/services/checkins";
+import { createZone } from "@/services/zones";
 import { makeUser, resetDatabase } from "./helpers";
 
 const DAY_ONE = "2026-12-13";
@@ -19,9 +20,14 @@ const ON_DAY_ONE = new Date("2026-12-13T08:00:00Z");
 const LATE_ON_DAY_ONE = new Date("2026-12-13T20:30:00Z");
 const NEXT_RIYADH_DAY = new Date("2026-12-13T21:30:00Z");
 
+/** Creates a place for a code to belong to. */
+function place() {
+  return createZone({ nameAr: "المدخل", nameEn: "Gate", detailsAr: "", detailsEn: "", type: "entrance", x: 1, y: 1, width: 10, height: 10 });
+}
+
 /** Creates a code and fails the test if creation is refused. */
 async function makeCode(eventDate = DAY_ONE) {
-  const result = await createAttendanceCode({ eventDate });
+  const result = await createAttendanceCode({ eventDate, zoneId: (await place()).id });
   if (!result.ok) throw new Error(result.code);
   return result.code;
 }
@@ -29,12 +35,11 @@ async function makeCode(eventDate = DAY_ONE) {
 describe("attendance codes", () => {
   beforeEach(resetDatabase);
 
-  it("records a visitor who scans on the right day, with no staff member", async () => {
+  it("records a visitor who scans on the right day", async () => {
     const [visitor, code] = [await makeUser(), await makeCode()];
     expect(await checkInWithCode(visitor.id, code.token, ON_DAY_ONE)).toMatchObject({ status: "checked_in" });
     const [row] = await db.select().from(checkIns).where(eq(checkIns.userId, visitor.id));
     expect(row.eventDate).toBe(DAY_ONE);
-    expect(row.checkedInBy).toBeNull();
   });
 
   it("reports the first time on a second scan the same day", async () => {
@@ -74,20 +79,13 @@ describe("attendance codes", () => {
 
   it("gives nothing for a switched-off code", async () => {
     const [visitor, code] = [await makeUser(), await makeCode()];
-    await setAttendanceCodeActive(code.id, false);
+    await updateAttendanceCode(code.id, { isActive: false });
     expect((await checkInWithCode(visitor.id, code.token, ON_DAY_ONE)).status).toBe("invalid");
   });
 
   it("accepts a lowercase typed token", async () => {
     const [visitor, code] = [await makeUser(), await makeCode()];
     expect((await checkInWithCode(visitor.id, code.token.toLowerCase(), ON_DAY_ONE)).status).toBe("checked_in");
-  });
-
-  it("shares one daily record with the staff badge scanner", async () => {
-    const [staff, visitor, code] = [await makeUser(), await makeUser(), await makeCode()];
-    await checkInByBadge(staff.id, visitor.badgeCode, ON_DAY_ONE);
-    expect((await checkInWithCode(visitor.id, code.token, LATE_ON_DAY_ONE)).status).toBe("already");
-    expect(await getAttendanceDays(visitor.id)).toEqual([DAY_ONE]);
   });
 
   it("recognizes its own tokens, even typed in lowercase, for the one scan button", async () => {
@@ -98,7 +96,10 @@ describe("attendance codes", () => {
 
   it("allows one code per date", async () => {
     await makeCode();
-    expect(await createAttendanceCode({ eventDate: DAY_ONE })).toEqual({ ok: false, code: "ATTENDANCE_DATE_TAKEN" });
+    expect(await createAttendanceCode({ eventDate: DAY_ONE, zoneId: (await place()).id })).toEqual({
+      ok: false,
+      code: "ATTENDANCE_DATE_TAKEN",
+    });
   });
 
   it("lists codes by date with how many visitors attended that day", async () => {
@@ -111,16 +112,9 @@ describe("attendance codes", () => {
     expect(list.map((item) => item.checkInCount)).toEqual([2, 0]);
   });
 
-  it("keeps attendance when a code is deleted", async () => {
-    const [visitor, code] = [await makeUser(), await makeCode()];
-    await checkInWithCode(visitor.id, code.token, ON_DAY_ONE);
-    expect(await deleteAttendanceCode(code.id)).toBe(true);
-    expect(await getAttendanceDays(visitor.id)).toEqual([DAY_ONE]);
-  });
-
   it("reports a missing code on change and delete", async () => {
     const missing = "00000000-0000-4000-8000-000000000000";
-    expect(await setAttendanceCodeActive(missing, false)).toBe(false);
-    expect(await deleteAttendanceCode(missing)).toBe(false);
+    expect(await updateAttendanceCode(missing, { isActive: false })).toBe(false);
+    expect(await deleteAttendanceCode(missing)).toEqual({ ok: false, code: "NOT_FOUND" });
   });
 });

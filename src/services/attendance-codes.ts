@@ -1,14 +1,14 @@
 // Daily attendance codes: an admin creates one per date, and visitors scan it at the entrance.
-import { and, asc, eq, sql } from "drizzle-orm";
-import { CHECK_IN_STATUS, ERROR_CODES } from "@/config/literals";
+import { and, asc, count, eq, sql } from "drizzle-orm";
+import { CHECK_IN_STATUS, CODE_KINDS, ERROR_CODES } from "@/config/literals";
 import { db } from "@/db/client";
-import { attendanceCodes, checkIns } from "@/db/schema";
-import { generateCoinToken } from "@/lib/codes";
+import { attendanceCodes, checkIns, zones } from "@/db/schema";
+import { generateCode } from "@/lib/codes";
+import { isForeignKeyViolation, type DeleteOutcome } from "@/lib/delete-links";
 import { riyadhDate } from "@/lib/dates";
 import { normalizeCode } from "@/lib/qr-payload";
-import type { AttendanceCodeInput } from "@/lib/validation";
-
-export type AttendanceCode = typeof attendanceCodes.$inferSelect;
+import type { AttendanceCodeInput, AttendanceCodeUpdate } from "@/lib/validation";
+import { completedAllDaysBadge } from "./badges";
 
 /** Records attendance from a scanned code, only on the code's own date at the venue. */
 export async function checkInWithCode(userId: string, rawToken: string, now: Date = new Date()) {
@@ -27,7 +27,10 @@ export async function checkInWithCode(userId: string, rawToken: string, now: Dat
     .values({ userId, eventDate: code.eventDate, checkedInAt: now })
     .onConflictDoNothing()
     .returning({ userId: checkIns.userId });
-  if (inserted.length > 0) return { status: CHECK_IN_STATUS.checkedIn } as const;
+  if (inserted.length > 0) {
+    const allDaysBadge = await completedAllDaysBadge(userId);
+    return { status: CHECK_IN_STATUS.checkedIn, ...(allDaysBadge ? { allDaysBadge } : {}) } as const;
+  }
 
   const [existing] = await db
     .select({ at: checkIns.checkedInAt })
@@ -47,50 +50,74 @@ export async function isAttendanceToken(rawToken: string): Promise<boolean> {
   return Boolean(code);
 }
 
-/** Lists codes by date, with how many visitors attended on each date. */
+const CODE_WITH_PLACE = {
+  id: attendanceCodes.id,
+  token: attendanceCodes.token,
+  eventDate: attendanceCodes.eventDate,
+  isActive: attendanceCodes.isActive,
+  zoneId: attendanceCodes.zoneId,
+  zoneNameAr: zones.nameAr,
+  zoneNameEn: zones.nameEn,
+};
+
+/** Lists codes by date, with each place and how many visitors attended on each date. */
 export async function listAttendanceCodes() {
   return db
     .select({
-      id: attendanceCodes.id,
-      token: attendanceCodes.token,
-      eventDate: attendanceCodes.eventDate,
-      isActive: attendanceCodes.isActive,
+      ...CODE_WITH_PLACE,
       // Written with full table names, because both tables have an event_date column.
       checkInCount: sql<number>`(SELECT count(*)::int FROM check_ins WHERE check_ins.event_date = attendance_codes.event_date)`,
     })
     .from(attendanceCodes)
+    .leftJoin(zones, eq(attendanceCodes.zoneId, zones.id))
     .orderBy(asc(attendanceCodes.eventDate));
 }
 
-/** Loads one code by id. */
-export async function getAttendanceCode(id: string): Promise<AttendanceCode | undefined> {
-  const [code] = await db.select().from(attendanceCodes).where(eq(attendanceCodes.id, id)).limit(1);
+/** Loads one code and its place by id. */
+export async function getAttendanceCode(id: string) {
+  const [code] = await db
+    .select(CODE_WITH_PLACE)
+    .from(attendanceCodes)
+    .leftJoin(zones, eq(attendanceCodes.zoneId, zones.id))
+    .where(eq(attendanceCodes.id, id))
+    .limit(1);
   return code;
 }
 
-/** Creates the code for a date, refusing a second code on the same date. */
+/** Creates the code for a date and place, refusing a second code on the same date or a deleted place. */
 export async function createAttendanceCode(input: AttendanceCodeInput) {
-  const [code] = await db
-    .insert(attendanceCodes)
-    .values({ eventDate: input.eventDate, token: generateCoinToken() })
-    .onConflictDoNothing({ target: attendanceCodes.eventDate })
-    .returning();
-  if (!code) return { ok: false as const, code: ERROR_CODES.attendanceDateTaken };
-  return { ok: true as const, code };
+  try {
+    const [code] = await db
+      .insert(attendanceCodes)
+      .values({ eventDate: input.eventDate, zoneId: input.zoneId, token: generateCode(CODE_KINDS.attendance) })
+      .onConflictDoNothing({ target: attendanceCodes.eventDate })
+      .returning();
+    if (!code) return { ok: false as const, code: ERROR_CODES.attendanceDateTaken };
+    return { ok: true as const, code };
+  } catch (error) {
+    if (!isForeignKeyViolation(error)) throw error;
+    return { ok: false as const, code: ERROR_CODES.validation };
+  }
 }
 
-/** Switches a code on or off. Returns false if it does not exist. */
-export async function setAttendanceCodeActive(id: string, isActive: boolean): Promise<boolean> {
+/** Changes a code's place or switches it on or off. Returns false if it does not exist. */
+export async function updateAttendanceCode(id: string, changes: AttendanceCodeUpdate): Promise<boolean> {
   const rows = await db
     .update(attendanceCodes)
-    .set({ isActive })
+    .set(changes)
     .where(eq(attendanceCodes.id, id))
     .returning({ id: attendanceCodes.id });
   return rows.length > 0;
 }
 
-/** Deletes a code. Attendance already recorded stays. Returns false if it does not exist. */
-export async function deleteAttendanceCode(id: string): Promise<boolean> {
-  const rows = await db.delete(attendanceCodes).where(eq(attendanceCodes.id, id)).returning({ id: attendanceCodes.id });
-  return rows.length > 0;
+/** Deletes a code unless visitors already attended on its date. */
+export async function deleteAttendanceCode(id: string): Promise<DeleteOutcome> {
+  const [code] = await db.select({ date: attendanceCodes.eventDate }).from(attendanceCodes).where(eq(attendanceCodes.id, id)).limit(1);
+  if (!code) return { ok: false, code: ERROR_CODES.notFound };
+  const [attended] = await db.select({ value: count() }).from(checkIns).where(eq(checkIns.eventDate, code.date));
+  if (attended.value > 0) {
+    return { ok: false, code: ERROR_CODES.inUse, links: [{ type: "check_ins", date: code.date, count: attended.value }] };
+  }
+  await db.delete(attendanceCodes).where(eq(attendanceCodes.id, id));
+  return { ok: true };
 }

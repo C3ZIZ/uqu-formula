@@ -44,6 +44,15 @@ export async function loginAdminApi(request: APIRequestContext): Promise<void> {
   expect(response.ok()).toBe(true);
 }
 
+/** Creates a map place as the admin and returns its id. */
+export async function createPlace(request: APIRequestContext, nameAr = `مكان ${Date.now()}`): Promise<string> {
+  const response = await request.post("/api/admin/zones", {
+    data: { nameAr, nameEn: "Test place", detailsAr: "", detailsEn: "", type: "booth", x: 1, y: 1, width: 5, height: 5 },
+  });
+  expect(response.status()).toBe(201);
+  return (await response.json()).id;
+}
+
 /** Creates a coin code as the admin and returns its token and id. */
 export async function createCode(request: APIRequestContext, coins = 50): Promise<{ id: string; token: string }> {
   await loginAdminApi(request);

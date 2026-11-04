@@ -1,6 +1,7 @@
 // Shared building blocks for API routes: replies, origin checks, body parsing, and error catching.
 import { z } from "zod";
 import { ERROR_CODES, HEADERS, type ErrorCode } from "@/config/literals";
+import type { DeleteLink } from "./delete-links";
 
 const STATUS: Record<ErrorCode, number> = {
   VALIDATION: 400,
@@ -11,7 +12,8 @@ const STATUS: Record<ErrorCode, number> = {
   NOT_FOUND: 404,
   EMAIL_TAKEN: 409,
   LAST_ADMIN: 409,
-  CODE_HAS_CLAIMS: 409,
+  IN_USE: 409,
+  ALL_DAYS_BADGE_TAKEN: 409,
   ATTENDANCE_DATE_TAKEN: 409,
   RESET_INVALID: 400,
   SERVER: 500,
@@ -23,8 +25,8 @@ export function jsonOk(data: object = {}, status = 200): Response {
 }
 
 /** Sends an error reply with a stable code that the interface translates. */
-export function jsonError(code: ErrorCode, fields?: string[]): Response {
-  return Response.json(fields ? { error: code, fields } : { error: code }, { status: STATUS[code] });
+export function jsonError(code: ErrorCode, fields?: string[], links?: DeleteLink[]): Response {
+  return Response.json({ error: code, ...(fields ? { fields } : {}), ...(links ? { links } : {}) }, { status: STATUS[code] });
 }
 
 /** Blocks changes sent from other websites. */

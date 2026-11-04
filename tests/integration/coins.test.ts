@@ -87,7 +87,7 @@ describe("coin codes", () => {
     const user = await makeUser();
     const code = await createCoinCode(CODE);
     await claimCode(user.id, code.token);
-    expect(await deleteCoinCode(code.id)).toEqual({ ok: false, code: "CODE_HAS_CLAIMS" });
+    expect(await deleteCoinCode(code.id)).toMatchObject({ ok: false, code: "IN_USE" });
     expect((await getCoinSummary(user.id, "en")).total).toBe(50);
   });
 

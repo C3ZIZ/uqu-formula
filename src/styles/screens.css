@@ -60,7 +60,7 @@ html[lang="en"] .band.hero h1 {
   font-size: 1.75rem;
 }
 
-.staff-links {
+.admin-link {
   display: flex;
   flex-wrap: wrap;
   gap: 4px 24px;
@@ -271,6 +271,22 @@ html[lang="en"] .band.hero h1 {
   text-align: center;
   clip-path: polygon(7% 0, 100% 0, 93% 100%, 0 100%);
   transition: transform var(--fast) var(--ease-out);
+  animation: zone-in 340ms var(--ease-out) backwards;
+  animation-delay: calc(var(--reveal, 0) * 35ms);
+}
+
+@keyframes zone-in {
+  from {
+    opacity: 0;
+    transform: scale(0.88);
+  }
+}
+
+.map-zone--selected {
+  z-index: 1;
+  outline: 3px solid var(--taupe);
+  outline-offset: -3px;
+  clip-path: none;
 }
 
 .map-zone:active {
@@ -318,31 +334,6 @@ html[lang="en"] .band.hero h1 {
   font-size: 0.8125rem;
 }
 
-.zone-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  min-height: 44px;
-  padding: 0;
-  border: 0;
-  background: none;
-  text-align: start;
-}
-
-.zone-row-name {
-  flex: 1;
-  font-weight: 700;
-}
-
-.zone-swatch {
-  flex: none;
-  width: 20px;
-  height: 16px;
-  border: 1px solid var(--ink);
-  transform: skewX(-14deg);
-}
-
 .sheet {
   position: fixed;
   inset-block: auto 0;
@@ -361,6 +352,13 @@ html[lang="en"] .band.hero h1 {
 
 .sheet::backdrop {
   background: rgb(0 0 0 / 55%);
+  animation: fade-in var(--medium) var(--ease-out);
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
 }
 
 .sheet-body {
@@ -569,6 +567,24 @@ html[lang="en"] .band.hero h1 {
   background-repeat: no-repeat;
 }
 
+/* A sweeping line shows the camera is reading, and it only runs while the scanner is open. */
+.scanner-frame::after {
+  content: "";
+  position: absolute;
+  inset-inline: 6px;
+  top: 0;
+  height: 2px;
+  background: var(--taupe);
+  box-shadow: 0 0 12px var(--taupe);
+  animation: scan-sweep 1.8s ease-in-out infinite alternate;
+}
+
+@keyframes scan-sweep {
+  to {
+    top: calc(100% - 2px);
+  }
+}
+
 .scanner-message {
   position: absolute;
   inset-inline: 0;
@@ -652,59 +668,53 @@ html[lang="en"] .band.hero h1 {
   color: var(--white);
 }
 
+/* Five start lights come on in turn while a scan is being counted. */
+.start-lights {
+  display: flex;
+  gap: 8px;
+}
+
+.start-light {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--line-on-dark);
+  animation: light-on 1.25s linear infinite;
+  animation-delay: calc(var(--light) * 160ms);
+}
+
+@keyframes light-on {
+  0%,
+  10% {
+    background: var(--line-on-dark);
+  }
+
+  20%,
+  70% {
+    background: var(--taupe);
+    box-shadow: 0 0 10px var(--taupe);
+  }
+
+  80%,
+  100% {
+    background: var(--line-on-dark);
+  }
+}
+
+/* The result icon arrives with a short pop, so the outcome of a scan is noticed at once. */
+.claim-inner > svg {
+  animation: result-pop 380ms var(--ease-out) backwards;
+}
+
+@keyframes result-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+
 .claim-working {
   font-size: 1.125rem;
-}
-
-/* Staff check-in */
-.desk {
-  display: grid;
-  gap: 16px;
-  margin-block-start: 8px;
-}
-
-.desk-count {
-  font-weight: 500;
-}
-
-.desk-count b {
-  font-size: 1.5rem;
-}
-
-.desk-result:empty {
-  display: none;
-}
-
-.result {
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
-  padding: 14px 16px;
-  animation: rise var(--fast) var(--ease-out);
-}
-
-.result > span {
-  display: grid;
-}
-
-.result-name {
-  font-size: 1.25rem;
-  font-weight: 700;
-}
-
-.result--good {
-  background: var(--deep);
-  color: var(--white);
-}
-
-.result--warn {
-  background: var(--taupe);
-  color: var(--black);
-}
-
-.result--bad {
-  background: var(--black);
-  color: var(--white);
 }
 
 /* Admin */
@@ -815,6 +825,199 @@ html[lang="en"] .band.hero h1 {
   margin-block-start: 12px;
 }
 
+/* Badges */
+.badge-medal {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  overflow: hidden;
+  background: var(--deep) var(--carbon);
+  background-blend-mode: soft-light;
+  color: var(--white);
+  clip-path: polygon(16% 0, 100% 0, 84% 100%, 0 100%);
+}
+
+.badge-medal img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.badge-medal--locked {
+  filter: grayscale(1);
+  opacity: 0.45;
+}
+
+.visitor-badge {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  animation: rise var(--medium) var(--ease-out) backwards;
+}
+
+.visitor-badge:nth-child(2) {
+  animation-delay: 50ms;
+}
+
+.visitor-badge:nth-child(3) {
+  animation-delay: 100ms;
+}
+
+.visitor-badge:nth-child(n + 4) {
+  animation-delay: 150ms;
+}
+
+.medal-reveal {
+  display: inline-grid;
+  animation: medal-in 520ms var(--ease-out) both;
+}
+
+@keyframes medal-in {
+  from {
+    opacity: 0;
+    transform: scale(0.6) rotate(-8deg);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.badge-row {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.icon-picker {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.icon-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.icon-choice {
+  display: grid;
+  place-items: center;
+  min-height: var(--tap);
+  position: relative;
+  color: var(--muted);
+  cursor: pointer;
+  transition: background-color var(--fast) var(--ease-out), color var(--fast) var(--ease-out);
+}
+
+.icon-choice input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.icon-choice:has(input:checked) {
+  background: var(--deep);
+  color: var(--white);
+}
+
+.icon-choice:has(input:focus-visible) {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.badge-image-field {
+  display: grid;
+  gap: 8px;
+}
+
+.badge-image-preview {
+  width: 96px;
+  height: 96px;
+  object-fit: cover;
+}
+
+.badge-image-pick {
+  cursor: pointer;
+}
+
+/* Agenda sections */
+.agenda-days {
+  display: grid;
+  margin-block-start: 16px;
+}
+
+.agenda-day {
+  border-block-end: 1px solid var(--line);
+}
+
+.agenda-day-toggle {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+  min-height: 64px;
+  padding: 10px var(--gutter);
+  background: none;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+  transition: background-color var(--fast) var(--ease-out);
+}
+
+.agenda-day-toggle:active {
+  background: var(--line);
+}
+
+.agenda-day-name {
+  display: grid;
+  flex: 1;
+}
+
+.agenda-day-name b {
+  font-size: 1.125rem;
+}
+
+.agenda-day-count {
+  color: var(--muted);
+  font-size: 0.9375rem;
+}
+
+.agenda-day-chevron {
+  flex: none;
+  transition: transform var(--medium) var(--ease-out);
+}
+
+.agenda-day-toggle[aria-expanded="true"] .agenda-day-chevron {
+  transform: rotate(180deg);
+}
+
+.agenda-day-panel {
+  padding-block-end: 16px;
+  animation: rise var(--medium) var(--ease-out);
+}
+
+.delete-blocked {
+  animation: rise var(--fast) var(--ease-out);
+  margin-block-start: 10px;
+  font-weight: 500;
+}
+
+.delete-blocked ul {
+  margin: 6px 0;
+  padding-inline-start: 18px;
+}
+
+.delete-blocked p {
+  margin: 0;
+}
+
 .resource-actions {
   margin-block-start: 2px;
   column-gap: 18px;
@@ -919,4 +1122,124 @@ html[lang="en"] .band.hero h1 {
     opacity: 0;
     transform: translateY(-24px);
   }
+}
+
+/* Not-found scene */
+.off-track {
+  min-height: calc(100dvh - var(--top-height));
+  background: var(--ink);
+  color: var(--white);
+}
+
+.off-track-scene svg {
+  display: block;
+  width: 100%;
+  max-width: var(--content);
+  margin-inline: auto;
+}
+
+.track-surface,
+.track-kerb,
+.track-line,
+.skid {
+  fill: none;
+}
+
+.track-surface {
+  stroke-width: 58;
+}
+
+.track-kerb {
+  stroke: var(--white);
+  stroke-width: 66;
+  stroke-dasharray: 14 14;
+}
+
+.track-line {
+  stroke: var(--white);
+  stroke-width: 1.5;
+  stroke-dasharray: 14 12;
+  opacity: 0.55;
+}
+
+.gravel {
+  fill: var(--taupe);
+}
+
+.gravel-grain {
+  fill: var(--ink);
+  opacity: 0.28;
+}
+
+.skid {
+  stroke: var(--black);
+  stroke-width: 3.5;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  opacity: 0.72;
+}
+
+.skid--drawn {
+  stroke-linecap: round;
+  stroke-dasharray: none;
+  stroke-dashoffset: 0;
+}
+
+.car-wheel {
+  fill: var(--black);
+}
+
+.car-wing {
+  fill: var(--white);
+}
+
+.car-body {
+  fill: var(--teal);
+}
+
+.car-stripe {
+  fill: var(--white);
+}
+
+.car-helmet {
+  fill: var(--taupe);
+  stroke: var(--black);
+  stroke-width: 1;
+}
+
+.dust {
+  fill: var(--paper);
+}
+
+.off-track-still {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .off-track-live {
+    display: none;
+  }
+
+  .off-track-still {
+    display: inline;
+  }
+}
+
+.off-track-text {
+  display: grid;
+  justify-items: start;
+  gap: 10px;
+  padding-block: 12px 40px;
+}
+
+.off-track-text .lead {
+  color: var(--muted-on-dark);
+}
+
+.off-track-code {
+  margin: 0;
+  font-family: var(--font-wide), sans-serif;
+  font-size: 1rem;
+  letter-spacing: 0.16em;
+  color: var(--taupe);
 }

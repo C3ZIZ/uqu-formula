@@ -1,6 +1,6 @@
 // Tests daily attendance QR codes from the admin panel through to a visitor scanning at the door.
 import { expect, test, type APIRequestContext, type Browser } from "@playwright/test";
-import { ADMIN, loginAdminApi, loginByForm, PASSWORD, registerByApi, registerByForm, uniqueEmail } from "./helpers";
+import { ADMIN, createPlace, loginAdminApi, loginByForm, PASSWORD, registerByApi, registerByForm, uniqueEmail } from "./helpers";
 
 /** Returns today's date at the venue. */
 function riyadhToday(): string {
@@ -10,7 +10,7 @@ function riyadhToday(): string {
 /** Returns the token of today's code, creating it first if needed. */
 async function todayToken(browser: Browser, admin: APIRequestContext, baseURL: string | undefined): Promise<string> {
   const today = riyadhToday();
-  const created = await admin.post("/api/admin/attendance-codes", { data: { eventDate: today } });
+  const created = await admin.post("/api/admin/attendance-codes", { data: { eventDate: today, zoneId: await createPlace(admin) } });
   if (created.ok()) return (await created.json()).token;
   const context = await browser.newContext({ baseURL, ignoreHTTPSErrors: true, storageState: await admin.storageState() });
   const page = await context.newPage();
@@ -50,7 +50,7 @@ test("an admin creates a daily code in the panel and prints it, and a repeat dat
 test("a logged-out visitor scans the door code, registers, returns, and is checked in once", async ({ browser, page, playwright, baseURL }) => {
   const admin = await playwright.request.newContext({ baseURL, ignoreHTTPSErrors: true });
   await loginAdminApi(admin);
-  const reply = await admin.post("/api/admin/attendance-codes", { data: { eventDate: "2031-05-01" } });
+  const reply = await admin.post("/api/admin/attendance-codes", { data: { eventDate: "2031-05-01", zoneId: await createPlace(admin) } });
   expect(reply.status()).toBe(201);
   const future = await reply.json();
   const token = await todayToken(browser, admin, baseURL);
@@ -113,7 +113,7 @@ test("logging in alone does not record attendance", async ({ page, request }) =>
 test("the scan button works for logged-out visitors and closes after a read", async ({ page }) => {
   await page.goto("/ar/agenda");
   await page.getByRole("button", { name: "امسح", exact: true }).click();
-  await page.getByLabel("أو اكتب الرمز").fill("abcdefgh2345");
+  await page.getByLabel("أو اكتب الرمز").fill("uqu-pit-222222");
   await page.getByRole("button", { name: "تأكيد" }).click();
   await expect(page).toHaveURL(/\/ar\/login\?next=/);
   await expect(page.getByRole("dialog")).toBeHidden();
@@ -132,6 +132,6 @@ test("the bottom bar has five items with scanning in the middle", async ({ page 
 
 test("visitors cannot manage attendance codes", async ({ request }) => {
   await registerByApi(request);
-  const created = await request.post("/api/admin/attendance-codes", { data: { eventDate: "2031-06-01" } });
+  const created = await request.post("/api/admin/attendance-codes", { data: { eventDate: "2031-06-01", zoneId: "00000000-0000-4000-8000-000000000000" } });
   expect(created.status()).toBe(403);
 });

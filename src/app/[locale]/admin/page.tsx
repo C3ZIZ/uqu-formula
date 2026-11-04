@@ -1,12 +1,14 @@
 // The admin overview: registered people versus people who actually attended.
 import { PageBand } from "@/components/PageBand";
 import { getMessages } from "@/config/messages";
+import { requireAdmin } from "@/lib/auth";
 import { pageLocale, type LocaleProps } from "@/lib/page";
 import { getOverviewCounts } from "@/services/users";
 
 /** Shows the headline totals. */
 export default async function AdminOverviewPage({ params }: LocaleProps) {
   const locale = await pageLocale(params);
+  await requireAdmin(locale);
   const text = getMessages(locale).admin;
   const counts = await getOverviewCounts();
   const rows = [

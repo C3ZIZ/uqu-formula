@@ -38,6 +38,7 @@ describe("seed", () => {
   it("keeps content an admin later deleted from coming back while other content exists", async () => {
     await runSeed(ADMIN);
     const [zone] = await db.select().from(zones).limit(1);
+    await db.delete(agendaItems).where(eq(agendaItems.zoneId, zone.id));
     await db.delete(zones).where(eq(zones.id, zone.id));
     const before = await tableCounts();
     await runSeed(ADMIN);

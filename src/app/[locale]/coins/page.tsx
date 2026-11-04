@@ -1,19 +1,23 @@
-// The coins screen: total, scanner, and history.
+// The coins screen: total, badges, and history.
+import { BadgeMedal } from "@/components/BadgeMedal";
 import { CoinCount } from "@/components/CoinCount";
 import { Slashes } from "@/components/Slashes";
+import { BADGE_KINDS_BY_NAME } from "@/config/literals";
 import { getMessages } from "@/config/messages";
 import { localePath, PAGE_ROUTES } from "@/config/routes";
 import { requireSession } from "@/lib/auth";
 import { formatDateTime } from "@/lib/dates";
+import { pickLocalized } from "@/lib/localized";
 import { pageLocale, type LocaleProps } from "@/lib/page";
+import { getVisitorBadges } from "@/services/badges";
 import { getCoinSummary } from "@/services/coins";
 
-/** Shows the visitor's coins and how to earn more. */
+/** Shows the visitor's coins, their badges, and how to earn more. */
 export default async function CoinsPage({ params }: LocaleProps) {
   const locale = await pageLocale(params);
   const text = getMessages(locale);
   const session = await requireSession(locale, localePath(locale, PAGE_ROUTES.coins));
-  const summary = await getCoinSummary(session.userId, locale);
+  const [summary, badges] = await Promise.all([getCoinSummary(session.userId, locale), getVisitorBadges(session.userId)]);
 
   return (
     <main className="page">
@@ -27,6 +31,37 @@ export default async function CoinsPage({ params }: LocaleProps) {
           </p>
         </div>
       </div>
+
+      {badges.length > 0 ? (
+        <section className="content section">
+          <h2 className="section-title">{text.coins.badgesTitle}</h2>
+          <ul className="rows">
+            {badges.map((badge) => (
+              <li key={badge.id} className="visitor-badge">
+                <BadgeMedal id={badge.id} icon={badge.icon} imageUpdatedAt={badge.imageUpdatedAt} earned={badge.earned} />
+                <span>
+                  <b>{pickLocalized(locale, badge.nameAr, badge.nameEn)}</b>
+                  <span className="row-sub lead">
+                    {badge.earned ? (
+                      <>
+                        {text.coins.badgeEarned}
+                        {badge.earnedAt ? ` · ${formatDateTime(badge.earnedAt, locale)}` : ""}
+                      </>
+                    ) : badge.kind === BADGE_KINDS_BY_NAME.allDays ? (
+                      <>
+                        {text.coins.attended} <span className="numeric">{badge.attended}</span> {text.coins.attendedOf}{" "}
+                        <span className="numeric">{badge.totalDays}</span> {text.coins.attendedDays}
+                      </>
+                    ) : (
+                      pickLocalized(locale, badge.challengeAr, badge.challengeEn)
+                    )}
+                  </span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       <section className="content section">
         <h2 className="section-title">{text.coins.historyTitle}</h2>

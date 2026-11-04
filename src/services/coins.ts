@@ -1,10 +1,11 @@
 // Coin codes and claims. The database's primary key guarantees one claim per visitor per code.
-import { and, desc, eq, sql, sum } from "drizzle-orm";
-import { CLAIM_STATUS, ERROR_CODES } from "@/config/literals";
+import { and, count, desc, eq, sql, sum } from "drizzle-orm";
+import { CLAIM_STATUS, CODE_KINDS, ERROR_CODES } from "@/config/literals";
 import type { Locale } from "@/config/locales";
 import { db } from "@/db/client";
 import { coinClaims, coinCodes } from "@/db/schema";
-import { generateCoinToken } from "@/lib/codes";
+import { generateCode } from "@/lib/codes";
+import type { DeleteOutcome } from "@/lib/delete-links";
 import { pickLocalized } from "@/lib/localized";
 import { normalizeCode } from "@/lib/qr-payload";
 import type { CoinCodeInput } from "@/lib/validation";
@@ -84,7 +85,7 @@ export async function getCoinCode(id: string): Promise<CoinCode | undefined> {
 
 /** Creates a code with a new random token. */
 export async function createCoinCode(input: CoinCodeInput): Promise<CoinCode> {
-  const [code] = await db.insert(coinCodes).values({ ...input, token: generateCoinToken() }).returning();
+  const [code] = await db.insert(coinCodes).values({ ...input, token: generateCode(CODE_KINDS.coin) }).returning();
   return code;
 }
 
@@ -95,13 +96,14 @@ export async function updateCoinCode(id: string, input: CoinCodeInput): Promise<
 }
 
 /** Deletes a code unless visitors have already collected it. */
-export async function deleteCoinCode(id: string) {
+export async function deleteCoinCode(id: string): Promise<DeleteOutcome> {
   const hasClaims = sql`EXISTS (SELECT 1 FROM ${coinClaims} WHERE ${coinClaims.codeId} = ${coinCodes.id})`;
   const rows = await db
     .delete(coinCodes)
     .where(and(eq(coinCodes.id, id), sql`NOT ${hasClaims}`))
     .returning({ id: coinCodes.id });
-  if (rows.length > 0) return { ok: true as const };
-  const exists = await getCoinCode(id);
-  return { ok: false as const, code: exists ? ERROR_CODES.codeHasClaims : ERROR_CODES.notFound };
+  if (rows.length > 0) return { ok: true };
+  if (!(await getCoinCode(id))) return { ok: false, code: ERROR_CODES.notFound };
+  const [claims] = await db.select({ value: count() }).from(coinClaims).where(eq(coinClaims.codeId, id));
+  return { ok: false, code: ERROR_CODES.inUse, links: [{ type: "coin_claims", count: claims.value }] };
 }

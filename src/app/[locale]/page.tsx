@@ -1,5 +1,5 @@
 // The home screen: event identity, what it is, and the next step for this visitor.
-import { CalendarDays, ChevronsRight, IdCard, QrCode, ScanLine, ShieldCheck, UserPlus } from "lucide-react";
+import { CalendarDays, ChevronsRight, IdCard, QrCode, ShieldCheck, UserPlus } from "lucide-react";
 import Link from "next/link";
 import { CoinCount } from "@/components/CoinCount";
 import { Logo } from "@/components/Logo";
@@ -74,18 +74,12 @@ export default async function HomePage({ params }: LocaleProps) {
         </div>
       </section>
 
-      {visitor && visitor.role !== ROLES.visitor ? (
-        <div className="content staff-links">
-          <Link className="text-action" href={path(PAGE_ROUTES.staffCheckIn)}>
-            <ScanLine size={18} aria-hidden="true" />
-            {text.nav.staff}
+      {visitor?.role === ROLES.admin ? (
+        <div className="content admin-link">
+          <Link className="text-action" href={path(PAGE_ROUTES.admin)}>
+            <ShieldCheck size={18} aria-hidden="true" />
+            {text.nav.admin}
           </Link>
-          {visitor.role === ROLES.admin ? (
-            <Link className="text-action" href={path(PAGE_ROUTES.admin)}>
-              <ShieldCheck size={18} aria-hidden="true" />
-              {text.nav.admin}
-            </Link>
-          ) : null}
         </div>
       ) : null}
 

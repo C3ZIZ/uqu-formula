@@ -13,7 +13,6 @@ export const PAGE_ROUTES = {
   coins: "/coins",
   scan: (token: string) => `/scan/${encodeURIComponent(token)}`,
   attend: (token: string) => `/attend/${encodeURIComponent(token)}`,
-  staffCheckIn: "/staff/check-in",
   admin: "/admin",
   adminRegistrants: "/admin/registrants",
   adminAgenda: "/admin/agenda",
@@ -22,6 +21,8 @@ export const PAGE_ROUTES = {
   adminCoinCodePrint: (id: string) => `/admin/coin-codes/${id}/print`,
   adminAttendanceCodes: "/admin/attendance-codes",
   adminAttendanceCodePrint: (id: string) => `/admin/attendance-codes/${id}/print`,
+  adminBadges: "/admin/badges",
+  adminBadgePrint: (id: string) => `/admin/badges/${id}/print`,
 } as const;
 
 export const API_ROUTES = {
@@ -32,7 +33,6 @@ export const API_ROUTES = {
   forgotPassword: "/api/auth/forgot-password",
   resetPassword: "/api/auth/reset-password",
   coinClaim: "/api/coins/claim",
-  checkIn: "/api/staff/check-in",
   attendanceCheckIn: "/api/attendance/check-in",
   adminRegistrantsCsv: "/api/admin/registrants/csv",
   adminUserRole: (id: string) => `/api/admin/users/${id}/role`,
@@ -46,10 +46,15 @@ export const API_ROUTES = {
   adminAttendanceCodes: "/api/admin/attendance-codes",
   adminAttendanceCode: (id: string) => `/api/admin/attendance-codes/${id}`,
   adminAttendanceCodeQr: (id: string) => `/api/admin/attendance-codes/${id}/qr`,
+  adminBadges: "/api/admin/badges",
+  adminBadge: (id: string) => `/api/admin/badges/${id}`,
+  adminBadgeQr: (id: string) => `/api/admin/badges/${id}/qr`,
+  badgeClaim: "/api/badges/claim",
+  badgeImage: (id: string, version: number) => `/api/badges/${id}/image?v=${version}`,
 } as const;
 
 // Files served from the public folder.
-export const ASSET_PATHS = { ogImage: "/og.jpg", icon: "/brand/icon.png" } as const;
+export const ASSET_PATHS = { ogImage: "/og.jpg", icon: "/brand/icon.png", asphalt: "/textures/asphalt-track.webp" } as const;
 export const OG_IMAGE_SIZE = { width: 1200, height: 630 } as const;
 
 // Finds the code inside any scanned link to this site.

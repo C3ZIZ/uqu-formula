@@ -22,6 +22,34 @@
       "when": 1793745487544,
       "tag": "0002_self-check-in-text",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1793782737326,
+      "tag": "0003_remove-staff-role",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793782972837,
+      "tag": "0004_readable-codes",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793783098197,
+      "tag": "0005_place-links",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793783547151,
+      "tag": "0006_challenge-badges",
+      "breakpoints": true
     }
   ]
 }

@@ -1,6 +1,6 @@
-// Tests staff check-in, the admin panel, roles, CSV export, and password reset.
+// Tests the admin panel, roles, CSV export, and password reset.
 import { expect, test } from "@playwright/test";
-import { ADMIN, loginByForm, registerByApi, registerByForm, uniqueEmail } from "./helpers";
+import { ADMIN, createPlace, loginAdminApi, loginByForm, registerByApi, registerByForm, uniqueEmail } from "./helpers";
 
 const MAILPIT = "http://localhost:8025/api/v1";
 
@@ -9,8 +9,6 @@ test("visitors cannot open the admin panel or its API", async ({ page, request }
   await registerByForm(page, "زائر", uniqueEmail());
   await expect(page).toHaveURL(/\/ar\/badge$/);
   await page.goto("/ar/admin");
-  await expect(page).toHaveURL(/\/ar$/);
-  await page.goto("/ar/staff/check-in");
   await expect(page).toHaveURL(/\/ar$/);
   const status = await page.evaluate(async () => (await fetch("/api/admin/registrants/csv")).status);
   expect(status).toBe(403);
@@ -53,36 +51,59 @@ test("an admin creates a coin code in the panel, and a visitor can claim it", as
   const claimed = page.locator(".resource-list li", { hasText: label });
   await claimed.getByRole("button", { name: "حذف" }).click();
   await claimed.getByRole("button", { name: "اضغط مرة أخرى للتأكيد" }).click();
-  await expect(page.locator(".form-error")).toContainText("لا يمكن حذفه");
+  await expect(page.locator(".form-error")).toContainText("لا يمكن الحذف");
 });
 
-test("an admin edits the agenda and the change reaches visitors", async ({ page }) => {
+test("an admin edits one day of the agenda, sorted by time, and the change reaches visitors", async ({ page }) => {
   await page.goto("/ar/login");
   await loginByForm(page, ADMIN.email, ADMIN.password);
   await expect(page).toHaveURL(/\/ar$/);
   await page.goto("/ar/admin/agenda");
-  await page.getByRole("button", { name: "إضافة" }).click();
-  const title = `فقرة ${Date.now()}`;
-  await page.getByLabel("العنوان بالعربية").fill(title);
-  await page.getByLabel("العنوان بالإنجليزية").fill("New session");
-  await page.getByLabel("يبدأ").fill("18:00");
-  await page.getByLabel("ينتهي").fill("17:00");
-  await page.getByRole("button", { name: "حفظ" }).click();
-  await expect(page.getByText("القيمة غير صحيحة.")).toBeVisible();
-  await page.getByLabel("ينتهي").fill("19:00");
-  await page.getByRole("button", { name: "حفظ" }).click();
-  await expect(page.locator(".resource-list")).toContainText(title);
+
+  const dayTwo = page.locator(".agenda-day", { hasText: "اليوم 2" });
+  const dayTwoToggle = dayTwo.locator(".agenda-day-toggle");
+  await expect(dayTwoToggle).toHaveAttribute("aria-expanded", "false");
+  await dayTwoToggle.click();
+  await expect(dayTwoToggle).toHaveAttribute("aria-expanded", "true");
+
+  /** Adds an item to day two through its own form. */
+  async function addItem(title: string, start: string, end: string) {
+    await dayTwo.getByRole("button", { name: "إضافة" }).click();
+    await dayTwo.getByLabel("العنوان بالعربية").fill(title);
+    await dayTwo.getByLabel("العنوان بالإنجليزية").fill("New session");
+    await dayTwo.getByLabel("يبدأ").fill(start);
+    await dayTwo.getByLabel("ينتهي").fill(end);
+    await dayTwo.getByRole("button", { name: "حفظ" }).click();
+  }
+
+  const stamp = Date.now();
+  const [late, early] = [`فقرة متأخرة ${stamp}`, `فقرة مبكرة ${stamp}`];
+  await addItem(late, "18:00", "17:00");
+  await expect(dayTwo.getByText("القيمة غير صحيحة.")).toBeVisible();
+  await dayTwo.getByLabel("ينتهي").fill("19:00");
+  await dayTwo.getByRole("button", { name: "حفظ" }).click();
+  await expect(dayTwo.locator(".resource-list")).toContainText(late);
+  await addItem(early, "06:00", "07:00");
+  await expect(dayTwo.locator(".resource-list")).toContainText(early);
+
+  const titles = await dayTwo.locator(".resource-list li b").allTextContents();
+  expect(titles.indexOf(early)).toBeLessThan(titles.indexOf(late));
+  expect(titles.indexOf(early)).toBe(0);
 
   await expect(async () => {
     await page.goto("/ar/agenda");
-    await expect(page.getByRole("heading", { name: title })).toBeVisible({ timeout: 1000 });
+    await page.getByRole("tab", { name: /2/ }).click();
+    await expect(page.getByRole("heading", { name: late })).toBeVisible({ timeout: 1000 });
   }).toPass({ timeout: 40_000 });
 
   await page.goto("/ar/admin/agenda");
-  const row = page.locator(".resource-list li", { hasText: title });
-  await row.getByRole("button", { name: "حذف" }).click();
-  await row.getByRole("button", { name: "اضغط مرة أخرى للتأكيد" }).click();
-  await expect(page.locator(".resource-list")).not.toContainText(title);
+  await dayTwoToggle.click();
+  for (const title of [late, early]) {
+    const row = dayTwo.locator(".resource-list li", { hasText: title });
+    await row.getByRole("button", { name: "حذف" }).click();
+    await row.getByRole("button", { name: "اضغط مرة أخرى للتأكيد" }).click();
+    await expect(dayTwo.locator(".resource-list")).not.toContainText(title);
+  }
 });
 
 test("an admin places a new zone by tapping the map", async ({ page }) => {
@@ -107,46 +128,32 @@ test("an admin places a new zone by tapping the map", async ({ page }) => {
   await expect(page.locator(".resource-list")).not.toContainText(name);
 });
 
-test("staff check in a visitor once per day, and the badge and totals update", async ({ browser, page, baseURL }) => {
-  const visitorContext = await browser.newContext({ baseURL, ignoreHTTPSErrors: true });
-  const visitor = await visitorContext.newPage();
-  await visitor.goto("/ar/register");
-  const name = `حاضر ${Date.now()}`;
-  await registerByForm(visitor, name, uniqueEmail());
-  await expect(visitor).toHaveURL(/\/ar\/badge$/);
-  await expect(visitor.getByRole("status")).toContainText("لم يُسجل حضورك");
-  const badgeCode = (await visitor.locator(".badge-code .numeric").textContent()) ?? "";
+test("a place with an agenda item and an attendance code cannot be deleted, and the warning names them", async ({ page, request }) => {
+  await loginAdminApi(request);
+  const name = `المسرح ${Date.now()}`;
+  const zoneId = await createPlace(request, name);
+  const title = `فعالية ${Date.now()}`;
+  const item = await request.post("/api/admin/agenda", {
+    data: { titleAr: title, titleEn: "Linked", detailsAr: "", detailsEn: "", day: 1, startTime: "09:00", endTime: "10:00", zoneId },
+  });
+  expect(item.status()).toBe(201);
+  const eventDate = `2032-0${1 + Math.floor(Math.random() * 9)}-1${Math.floor(Math.random() * 9)}`;
+  const code = await request.post("/api/admin/attendance-codes", { data: { eventDate, zoneId } });
+  expect(code.status()).toBe(201);
 
   await page.goto("/ar/login");
   await loginByForm(page, ADMIN.email, ADMIN.password);
   await expect(page).toHaveURL(/\/ar$/);
-  await page.getByRole("link", { name: "تسجيل الحضور" }).click();
-  const countBefore = Number(await page.locator(".desk-count .numeric").textContent());
-  await page.getByRole("button", { name: "تشغيل الماسح" }).click();
-  await page.getByLabel("أو اكتب الرمز").fill(badgeCode.toLowerCase());
-  await page.getByRole("button", { name: "تأكيد" }).click();
-  await expect(page.locator(".result--good")).toContainText(name);
-  await expect(page.locator(".desk-count .numeric")).toHaveText(String(countBefore + 1));
-
-  // A badge left in view keeps reading: the success message must stay on screen.
-  await page.waitForTimeout(3000);
-  await page.getByLabel("أو اكتب الرمز").fill(badgeCode);
-  await page.getByRole("button", { name: "تأكيد" }).click();
-  await page.waitForTimeout(500);
-  await expect(page.locator(".result--good")).toContainText(name);
-
+  await page.goto("/ar/admin/zones");
+  const row = page.locator(".resource-list li", { hasText: name });
+  await row.getByRole("button", { name: "حذف" }).click();
+  await row.getByRole("button", { name: "اضغط مرة أخرى للتأكيد" }).click();
+  const warning = row.locator(".delete-blocked");
+  await expect(warning).toContainText("لا يمكن الحذف");
+  await expect(warning).toContainText(title);
+  await expect(warning).toContainText("كود حضور");
   await page.reload();
-  await page.getByRole("button", { name: "تشغيل الماسح" }).click();
-  await page.getByLabel("أو اكتب الرمز").fill(badgeCode);
-  await page.getByRole("button", { name: "تأكيد" }).click();
-  await expect(page.locator(".result--warn")).toContainText("مسجل حضوره مسبقًا");
-  await page.getByLabel("أو اكتب الرمز").fill("FWNOTAREALCODE");
-  await page.getByRole("button", { name: "تأكيد" }).click();
-  await expect(page.locator(".result--bad")).toContainText("لا يوجد زائر");
-
-  await visitor.reload();
-  await expect(visitor.getByRole("status")).toContainText("سُجل حضورك");
-  await visitorContext.close();
+  await expect(page.locator(".resource-list")).toContainText(name);
 });
 
 test("the registrant list searches, and the CSV opens with correct Arabic", async ({ page, request }) => {
@@ -170,27 +177,28 @@ test("the registrant list searches, and the CSV opens with correct Arabic", asyn
   expect(csv.text).toContain(name);
 });
 
-test("an admin promotes a visitor to staff, and access takes effect immediately", async ({ browser, page, baseURL }) => {
+test("an admin promotes a visitor to admin, and access takes effect immediately", async ({ browser, page, baseURL }) => {
   const visitorContext = await browser.newContext({ baseURL, ignoreHTTPSErrors: true });
   const visitor = await visitorContext.newPage();
   const email = uniqueEmail();
   await visitor.goto("/ar/register");
-  await registerByForm(visitor, "منظم جديد", email);
+  await registerByForm(visitor, "مسؤول جديد", email);
   await expect(visitor).toHaveURL(/\/ar\/badge$/);
 
   await page.goto("/ar/login");
   await loginByForm(page, ADMIN.email, ADMIN.password);
   await expect(page).toHaveURL(/\/ar$/);
   await page.goto(`/ar/admin/registrants?q=${encodeURIComponent(email)}`);
-  await page.locator(".role-select select").selectOption("staff");
+  await expect(page.locator(".role-select option")).toHaveCount(2);
+  await page.locator(".role-select select").selectOption("admin");
   await expect.poll(async () => {
-    await visitor.goto("/ar/staff/check-in");
+    await visitor.goto("/ar/admin");
     return visitor.url();
-  }).toMatch(/\/ar\/staff\/check-in$/);
+  }).toMatch(/\/ar\/admin$/);
 
   await page.locator(".role-select select").selectOption("visitor");
   await expect.poll(async () => {
-    await visitor.goto("/ar/staff/check-in");
+    await visitor.goto("/ar/admin");
     return visitor.url();
   }).toMatch(/\/ar$/);
   await visitorContext.close();

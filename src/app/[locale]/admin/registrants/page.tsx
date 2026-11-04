@@ -7,6 +7,7 @@ import { LIMITS } from "@/config/limits";
 import { QUERY_PARAMS } from "@/config/literals";
 import { getMessages } from "@/config/messages";
 import { API_ROUTES, localePath, PAGE_ROUTES } from "@/config/routes";
+import { requireAdmin } from "@/lib/auth";
 import { pageLocale, type LocaleProps } from "@/lib/page";
 import { listRegistrants } from "@/services/users";
 
@@ -17,6 +18,7 @@ interface RegistrantsProps extends LocaleProps {
 /** Shows one page of registrants. */
 export default async function RegistrantsPage({ params, searchParams }: RegistrantsProps) {
   const locale = await pageLocale(params);
+  await requireAdmin(locale);
   const text = getMessages(locale);
   const copy = text.admin.registrants;
   const query = await searchParams;

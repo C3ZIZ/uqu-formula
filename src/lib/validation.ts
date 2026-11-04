@@ -2,8 +2,9 @@
 import { z } from "zod";
 import { DAY_NUMBERS, MAP_GRID } from "@/config/event";
 import { LIMITS } from "@/config/limits";
-import { ROLE_LIST, ZONE_TYPES } from "@/config/literals";
+import { BADGE_ICONS, BADGE_KINDS, ROLE_LIST, ZONE_TYPES } from "@/config/literals";
 import { LOCALES } from "@/config/locales";
+import { parseBadgeImage, type BadgeImage } from "./badge-image";
 import { toLatinDigits } from "./digits";
 
 export { toLatinDigits };
@@ -36,8 +37,6 @@ export const resetPasswordSchema = z.object({ token: z.string().min(1), password
 
 export const claimSchema = z.object({ token: z.string().trim().min(1).max(64) });
 
-export const checkInSchema = z.object({ badgeCode: z.string().trim().min(1).max(64) });
-
 export const roleSchema = z.object({ role: z.enum(ROLE_LIST) });
 
 export const coinCodeSchema = z.object({
@@ -47,9 +46,11 @@ export const coinCodeSchema = z.object({
   isActive: z.boolean().default(true),
 });
 
-export const attendanceCodeSchema = z.object({ eventDate: z.iso.date() });
+export const attendanceCodeSchema = z.object({ eventDate: z.iso.date(), zoneId: z.uuid() });
 
-export const attendanceCodeUpdateSchema = z.object({ isActive: z.boolean() });
+export const attendanceCodeUpdateSchema = z
+  .object({ isActive: z.boolean().optional(), zoneId: z.uuid().optional() })
+  .refine((changes) => changes.isActive !== undefined || changes.zoneId !== undefined);
 
 export const agendaSchema = z
   .object({
@@ -79,8 +80,37 @@ export const zoneSchema = z
   .refine((zone) => zone.x + zone.width <= MAP_GRID.width, { path: ["width"] })
   .refine((zone) => zone.y + zone.height <= MAP_GRID.height, { path: ["height"] });
 
+// An image of undefined keeps the current one, null removes it, and text replaces it.
+const badgeImageField = z
+  .string()
+  .max(LIMITS.badgeImageMaxBytes * 2)
+  .nullable()
+  .optional()
+  .transform((value, context) => {
+    if (value === null || value === undefined) return value;
+    const image = parseBadgeImage(value);
+    if (image) return image;
+    context.addIssue({ code: "custom", message: "invalid image" });
+    return z.NEVER;
+  });
+
+export const badgeUpdateSchema = z.object({
+  nameAr: shortText,
+  nameEn: shortText,
+  challengeAr: longText,
+  challengeEn: longText,
+  icon: z.enum(BADGE_ICONS),
+  isActive: z.boolean().default(true),
+  image: badgeImageField,
+});
+
+export const badgeCreateSchema = badgeUpdateSchema.extend({ kind: z.enum(BADGE_KINDS) });
+
+export type BadgeUpdateInput = Omit<z.infer<typeof badgeUpdateSchema>, "image"> & { image?: BadgeImage | null };
+export type BadgeCreateInput = BadgeUpdateInput & Pick<z.infer<typeof badgeCreateSchema>, "kind">;
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type CoinCodeInput = z.infer<typeof coinCodeSchema>;
 export type AttendanceCodeInput = z.infer<typeof attendanceCodeSchema>;
+export type AttendanceCodeUpdate = z.infer<typeof attendanceCodeUpdateSchema>;
 export type AgendaInput = z.infer<typeof agendaSchema>;
 export type ZoneInput = z.infer<typeof zoneSchema>;

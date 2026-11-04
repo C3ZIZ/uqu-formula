@@ -1,5 +1,7 @@
 // Sends JSON requests from the browser and returns a simple result.
-type ApiResult<T> = { ok: true; data: T } | { ok: false; error: string; fields: string[] };
+import type { DeleteLink } from "./delete-links";
+
+type ApiResult<T> = { ok: true; data: T } | { ok: false; error: string; fields: string[]; links: DeleteLink[] };
 
 export const NETWORK_ERROR = "network";
 
@@ -17,8 +19,8 @@ export async function sendJson<T = Record<string, never>>(
     });
     const data = await response.json().catch(() => ({}));
     if (response.ok) return { ok: true, data };
-    return { ok: false, error: data.error ?? "SERVER", fields: data.fields ?? [] };
+    return { ok: false, error: data.error ?? "SERVER", fields: data.fields ?? [], links: data.links ?? [] };
   } catch {
-    return { ok: false, error: NETWORK_ERROR, fields: [] };
+    return { ok: false, error: NETWORK_ERROR, fields: [], links: [] };
   }
 }

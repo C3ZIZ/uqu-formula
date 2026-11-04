@@ -1,11 +1,13 @@
 // The admin screen for daily attendance QR codes.
 "use client";
 
+import { ENTRANCE_ZONE, type ZoneType } from "@/config/literals";
 import type { Locale } from "@/config/locales";
 import type { Messages } from "@/config/messages";
 import { API_ROUTES, localePath, PAGE_ROUTES } from "@/config/routes";
 import { sendJson } from "@/lib/client-api";
 import { formatEventDate } from "@/lib/dates";
+import { pickLocalized } from "@/lib/localized";
 import { Printer } from "lucide-react";
 import Link from "next/link";
 import { ResourceManager, type FieldSpec } from "./ResourceManager";
@@ -15,12 +17,23 @@ export interface AttendanceCodeRow {
   token: string;
   eventDate: string;
   isActive: boolean;
+  zoneId: string | null;
+  zoneNameAr: string | null;
+  zoneNameEn: string | null;
   checkInCount: number;
+}
+
+interface PlaceOption {
+  id: string;
+  nameAr: string;
+  nameEn: string;
+  type: ZoneType;
 }
 
 interface AttendanceCodesManagerProps {
   locale: Locale;
   items: AttendanceCodeRow[];
+  zones: PlaceOption[];
   today: string;
   text: Messages["admin"];
   errors: Messages["errors"];
@@ -28,10 +41,20 @@ interface AttendanceCodesManagerProps {
 }
 
 /** Sets up the shared manager with a date field and print actions. */
-export function AttendanceCodesManager({ locale, items, today, text, errors, fieldErrors }: AttendanceCodesManagerProps) {
+export function AttendanceCodesManager({ locale, items, zones, today, text, errors, fieldErrors }: AttendanceCodesManagerProps) {
   const copy = text.attendanceCodes;
   const shared = text.coinCodes;
-  const fields: FieldSpec[] = [{ name: "eventDate", label: copy.date, kind: "date", latin: true }];
+  const placeField: FieldSpec = {
+    name: "zoneId",
+    label: text.form.zone,
+    kind: "select",
+    options: [
+      { value: "", label: copy.choosePlace },
+      ...zones.map((zone) => ({ value: zone.id, label: pickLocalized(locale, zone.nameAr, zone.nameEn) })),
+    ],
+  };
+  const fields: FieldSpec[] = [{ name: "eventDate", label: copy.date, kind: "date", latin: true }, placeField];
+  const entrance = zones.find((zone) => zone.type === ENTRANCE_ZONE);
 
   /** Switches a code on or off. */
   async function toggle(code: AttendanceCodeRow, refresh: () => void) {
@@ -41,13 +64,14 @@ export function AttendanceCodesManager({ locale, items, today, text, errors, fie
 
   return (
     <ResourceManager
+      locale={locale}
       items={items}
       fields={fields}
-      emptyValues={{ eventDate: today }}
+      editFields={[placeField]}
+      emptyValues={{ eventDate: today, zoneId: entrance?.id ?? "" }}
       createUrl={API_ROUTES.adminAttendanceCodes}
       itemUrl={API_ROUTES.adminAttendanceCode}
-      toValues={(code) => ({ eventDate: code.eventDate })}
-      hideEdit
+      toValues={(code) => ({ zoneId: code.zoneId ?? "" })}
       renderItem={(code) => (
         <div className="resource-item">
           <div className="row-main">
@@ -62,6 +86,9 @@ export function AttendanceCodesManager({ locale, items, today, text, errors, fie
             <span className="numeric code-token">{code.token}</span>
             {" · "}
             {code.isActive ? shared.activeNow : shared.inactive}
+          </p>
+          <p className="lead">
+            {text.form.zone}: {code.zoneNameAr ? pickLocalized(locale, code.zoneNameAr, code.zoneNameEn ?? "") : copy.noPlace}
           </p>
         </div>
       )}

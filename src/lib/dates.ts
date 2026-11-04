@@ -34,3 +34,8 @@ export function formatEventDate(date: string, locale: Locale): string {
     month: "short",
   }).format(new Date(`${date}T00:00:00Z`));
 }
+
+/** Picks the agenda section to open first: today's during the event, otherwise the first day. */
+export function agendaOpenDay(today: string): number {
+  return EVENT.days.find((day) => day.date === today)?.number ?? EVENT.days[0].number;
+}
