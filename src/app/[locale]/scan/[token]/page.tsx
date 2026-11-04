@@ -4,7 +4,7 @@ import { BadgeResult } from "@/components/BadgeResult";
 import { ClaimResult } from "@/components/ClaimResult";
 import { getMessages } from "@/config/messages";
 import { localePath, PAGE_ROUTES } from "@/config/routes";
-import { requireSession } from "@/lib/auth";
+import { requireUser } from "@/lib/auth";
 import { pageLocale } from "@/lib/page";
 import { isAttendanceToken } from "@/services/attendance-codes";
 import { isBadgeToken } from "@/services/badges";
@@ -17,7 +17,7 @@ interface ScanProps {
 export default async function ScanPage({ params }: ScanProps) {
   const locale = await pageLocale(params);
   const { token } = await params;
-  await requireSession(locale, localePath(locale, PAGE_ROUTES.scan(decodeURIComponent(token))));
+  await requireUser(locale, localePath(locale, PAGE_ROUTES.scan(decodeURIComponent(token))));
   if (await isAttendanceToken(decodeURIComponent(token))) {
     redirect(localePath(locale, PAGE_ROUTES.attend(decodeURIComponent(token))));
   }

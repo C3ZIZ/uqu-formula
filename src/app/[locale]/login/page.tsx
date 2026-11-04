@@ -6,9 +6,9 @@ import { PageBand } from "@/components/PageBand";
 import { QUERY_PARAMS } from "@/config/literals";
 import { getMessages } from "@/config/messages";
 import { localePath, PAGE_ROUTES } from "@/config/routes";
+import { hasLiveSession } from "@/lib/auth";
 import { pageLocale, type LocaleProps } from "@/lib/page";
 import { safeNextPath } from "@/lib/safe-redirect";
-import { getSession } from "@/lib/session";
 
 interface LoginProps extends LocaleProps {
   searchParams: Promise<Record<string, string | undefined>>;
@@ -20,7 +20,7 @@ export default async function LoginPage({ params, searchParams }: LoginProps) {
   const text = getMessages(locale);
   const rawNext = (await searchParams)[QUERY_PARAMS.next];
   const next = safeNextPath(rawNext, localePath(locale, PAGE_ROUTES.home));
-  if (await getSession()) redirect(next);
+  if (await hasLiveSession()) redirect(next);
   const carry = rawNext ? `?${new URLSearchParams({ [QUERY_PARAMS.next]: next })}` : "";
 
   return (

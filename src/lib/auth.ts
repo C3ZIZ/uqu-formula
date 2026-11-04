@@ -23,6 +23,12 @@ export async function requireSession(locale: Locale, nextPath: string): Promise<
   return session;
 }
 
+/** Tells whether the login cookie belongs to an account that still exists. A reset database leaves valid cookies behind. */
+export async function hasLiveSession(): Promise<boolean> {
+  const session = await getSession();
+  return session ? Boolean(await getUserById(session.userId)) : false;
+}
+
 /** Returns the database user for a page, or sends them to login. */
 export async function requireUser(locale: Locale, nextPath: string): Promise<User> {
   const session = await requireSession(locale, nextPath);
@@ -45,10 +51,11 @@ export function requireAdmin(locale: Locale): Promise<User> {
 
 type ApiAccess<T> = { ok: true; value: T } | { ok: false; response: Response };
 
-/** Returns the session for an API route, or a ready error reply. */
+/** Returns the session for an API route if its account still exists, or a ready error reply. */
 export async function apiSession(): Promise<ApiAccess<Session>> {
   const session = await getSession();
-  return session ? { ok: true, value: session } : { ok: false, response: jsonError(ERROR_CODES.unauthorized) };
+  if (!session || !(await getUserById(session.userId))) return { ok: false, response: jsonError(ERROR_CODES.unauthorized) };
+  return { ok: true, value: session };
 }
 
 /** Returns the database user for an admin API route, or a ready error reply. */
