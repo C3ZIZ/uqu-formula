@@ -127,6 +127,11 @@ export const ar = {
     admin: "مسؤول",
   },
   coins: {
+    badgesTitle: "البادجات",
+    badgeEarned: "حصلت عليه",
+    attended: "حضرت",
+    attendedOf: "من",
+    attendedDays: "أيام",
     title: "الكوينز",
     total: "رصيدك",
     unit: "كوين",
@@ -153,6 +158,16 @@ export const ar = {
     toCoins: "إلى الكوينز",
     retry: "حاول مجددًا",
   },
+  badgeClaim: {
+    working: "جاري احتساب البادج…",
+    claimed: "حصلت على بادج",
+    alert: "حصلت على بادج جديد",
+    already: "حصلت على هذا البادج من قبل",
+    invalid: "هذا الكود غير صالح",
+    invalidLead: "قد يكون الكود موقوفًا أو غير صحيح.",
+    toCoins: "إلى البادجات والكوينز",
+    retry: "حاول مجددًا",
+  },
   attendance: {
     working: "جاري تسجيل حضورك…",
     checkedIn: "تم تسجيل حضورك",
@@ -165,6 +180,7 @@ export const ar = {
     wrongDay: "هذا الكود ليوم آخر",
     wrongDayLead: "امسح كود اليوم عند المدخل.",
     toBadge: "إلى البادج",
+    allDaysBadge: "وحصلت على بادج حضور كل الأيام",
     retry: "حاول مجددًا",
   },
   admin: {

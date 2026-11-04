@@ -128,6 +128,11 @@ export const en: Messages = {
     admin: "Admin",
   },
   coins: {
+    badgesTitle: "Badges",
+    badgeEarned: "Earned",
+    attended: "Attended",
+    attendedOf: "of",
+    attendedDays: "days",
     title: "Coins",
     total: "Your balance",
     unit: "coins",
@@ -154,6 +159,16 @@ export const en: Messages = {
     toCoins: "Go to coins",
     retry: "Try again",
   },
+  badgeClaim: {
+    working: "Adding your badge…",
+    claimed: "You earned a badge",
+    alert: "You earned a new badge",
+    already: "You already have this badge",
+    invalid: "This code is not valid",
+    invalidLead: "It may be switched off or mistyped.",
+    toCoins: "To badges and coins",
+    retry: "Try again",
+  },
   attendance: {
     working: "Recording your attendance…",
     checkedIn: "You are checked in",
@@ -166,6 +181,7 @@ export const en: Messages = {
     wrongDay: "This code is for another day",
     wrongDayLead: "Scan today's code at the entrance.",
     toBadge: "Go to badge",
+    allDaysBadge: "You also earned the all-days badge",
     retry: "Try again",
   },
   admin: {

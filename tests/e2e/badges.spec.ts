@@ -1,6 +1,6 @@
 // Tests badges from the admin panel through to a visitor earning them.
 import { expect, test, type Page } from "@playwright/test";
-import { ADMIN, loginByForm } from "./helpers";
+import { ADMIN, loginAdminApi, loginByForm, registerByForm, uniqueEmail } from "./helpers";
 
 const TINY_PNG = Buffer.from(
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M/wHwAEBgIApD5fRAAAAABJRU5ErkJggg==",
@@ -56,4 +56,54 @@ test("visitors cannot manage badges", async ({ page, request }) => {
   expect((await request.post("/api/admin/badges", { data: {} })).status()).toBe(401);
   await page.goto("/ar/admin/badges");
   await expect(page).toHaveURL(/\/ar\/login/);
+});
+
+test("a visitor sees a challenge, scans its badge once, and then sees it earned", async ({ browser, page, baseURL, playwright }) => {
+  const admin = await playwright.request.newContext({ baseURL, ignoreHTTPSErrors: true });
+  await loginAdminApi(admin);
+  const name = `تحدي البيت ستوب ${Date.now()}`;
+  const created = await admin.post("/api/admin/badges", {
+    data: { kind: "challenge", nameAr: name, nameEn: "Pit stop", challengeAr: "غيّر الإطارات", challengeEn: "Change the tires", icon: "flag", isActive: true },
+  });
+  expect(created.status()).toBe(201);
+  const badge = await created.json();
+
+  await page.goto("/ar/register");
+  await registerByForm(page, "زائر البادج", uniqueEmail());
+  await expect(page).toHaveURL(/\/ar\/badge$/);
+  await expect(page.locator(".badge-qr svg")).toBeVisible();
+
+  await page.goto("/ar/coins");
+  const row = page.locator(".visitor-badge", { hasText: name });
+  await expect(row).toContainText("غيّر الإطارات");
+  await expect(row.locator(".badge-medal--locked")).toBeVisible();
+
+  await page.getByRole("button", { name: "امسح" }).click();
+  await page.getByLabel("أو اكتب الرمز").fill(badge.token.toLowerCase());
+  await page.getByRole("button", { name: "تأكيد" }).click();
+  await expect(page.locator(".toast")).toContainText("حصلت على بادج");
+  await expect(page.locator(".claim")).toContainText(name);
+
+  await page.goto("/ar/coins");
+  await expect(row.locator(".badge-medal--locked")).toHaveCount(0);
+  await expect(row).toContainText("حصلت عليه");
+
+  await page.goto(`/scan/${badge.token}`);
+  await expect(page.locator(".claim")).toContainText("حصلت على هذا البادج من قبل");
+  await expect(page.locator(".toast")).toHaveCount(0);
+
+  await admin.put(`/api/admin/badges/${badge.id}`, {
+    data: { nameAr: name, nameEn: "Pit stop", challengeAr: "", challengeEn: "", icon: "flag", isActive: false },
+  });
+  const otherContext = await browser.newContext({ baseURL, ignoreHTTPSErrors: true });
+  const other = await otherContext.newPage();
+  await other.goto("/ar/register");
+  await registerByForm(other, "زائر آخر", uniqueEmail());
+  await expect(other).toHaveURL(/\/ar\/badge$/);
+  await other.goto(`/scan/${badge.token}`);
+  await expect(other.locator(".claim")).toContainText("هذا الكود غير صالح");
+  await other.goto("/ar/coins");
+  await expect(other.locator(".visitor-badge", { hasText: name })).toHaveCount(0);
+  await otherContext.close();
+  await admin.dispose();
 });
