@@ -28,7 +28,7 @@ export async function checkInWithCode(userId: string, rawToken: string, now: Dat
     .onConflictDoNothing()
     .returning({ userId: checkIns.userId });
   if (inserted.length > 0) {
-    const allDaysBadge = await completedAllDaysBadge(userId);
+    const allDaysBadge = await completedAllDaysBadge(userId, code.eventDate);
     return { status: CHECK_IN_STATUS.checkedIn, ...(allDaysBadge ? { allDaysBadge } : {}) } as const;
   }
 

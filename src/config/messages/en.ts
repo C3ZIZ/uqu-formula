@@ -107,7 +107,7 @@ export const en: Messages = {
     inThisZone: "In this area",
     noItems: "Nothing is scheduled here.",
     close: "Close",
-    sampleNotice: "Sample layout until the final venue plan arrives.",
+    empty: "No places have been added yet.",
     types: {
       stage: "Stage",
       workshop: "Workshop",
@@ -266,6 +266,8 @@ export const en: Messages = {
     },
     attendanceCodes: {
       printTitle: "Check-in",
+      outsideEvent: "This date is not one of the event days, so it does not count toward the all-days badge.",
+      noPlacesYet: "Add a place in the areas tab first, then create the code.",
       choosePlace: "Choose a place",
       noPlace: "Not set yet",
       lead: "Create a code for each day and display it at the entrance. Visitors scan it to record attendance, and it only works on its date.",

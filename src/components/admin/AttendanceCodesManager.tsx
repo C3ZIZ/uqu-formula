@@ -6,7 +6,7 @@ import type { Locale } from "@/config/locales";
 import type { Messages } from "@/config/messages";
 import { API_ROUTES, localePath, PAGE_ROUTES } from "@/config/routes";
 import { sendJson } from "@/lib/client-api";
-import { formatEventDate } from "@/lib/dates";
+import { formatEventDate, isEventDate } from "@/lib/dates";
 import { pickLocalized } from "@/lib/localized";
 import { Printer } from "lucide-react";
 import Link from "next/link";
@@ -56,10 +56,11 @@ export function AttendanceCodesManager({ locale, items, zones, today, text, erro
   const fields: FieldSpec[] = [{ name: "eventDate", label: copy.date, kind: "date", latin: true }, placeField];
   const entrance = zones.find((zone) => zone.type === ENTRANCE_ZONE);
 
-  /** Switches a code on or off. */
-  async function toggle(code: AttendanceCodeRow, refresh: () => void) {
+  /** Switches a code on or off and reports a failure. */
+  async function toggle(code: AttendanceCodeRow, refresh: () => void, reportError: (code: string) => void) {
     const result = await sendJson(API_ROUTES.adminAttendanceCode(code.id), "PUT", { isActive: !code.isActive });
     if (result.ok) refresh();
+    else reportError(result.error);
   }
 
   return (
@@ -90,16 +91,25 @@ export function AttendanceCodesManager({ locale, items, zones, today, text, erro
           <p className="lead">
             {text.form.zone}: {code.zoneNameAr ? pickLocalized(locale, code.zoneNameAr, code.zoneNameEn ?? "") : copy.noPlace}
           </p>
+          {isEventDate(code.eventDate) ? null : <p className="lead">{copy.outsideEvent}</p>}
         </div>
       )}
-      renderActions={(code, refresh) => (
+      renderFormExtra={(values) => (
+        <>
+          {typeof values.eventDate === "string" && values.eventDate && !isEventDate(values.eventDate) ? (
+            <p className="form-note">{copy.outsideEvent}</p>
+          ) : null}
+          {zones.length === 0 ? <p className="form-note">{copy.noPlacesYet}</p> : null}
+        </>
+      )}
+      renderActions={(code, refresh, reportError) => (
         <>
           <Link className="text-action" href={localePath(locale, PAGE_ROUTES.adminAttendanceCodePrint(code.id))}>
             <Printer size={16} aria-hidden="true" />
             {shared.print}
           </Link>
           <a className="text-action" href={API_ROUTES.adminAttendanceCodeQr(code.id)} download>{shared.download}</a>
-          <button type="button" className="text-action" onClick={() => toggle(code, refresh)}>
+          <button type="button" className="text-action" onClick={() => toggle(code, refresh, reportError)}>
             {code.isActive ? shared.deactivate : shared.activate}
           </button>
         </>
