@@ -1048,3 +1048,123 @@ html[lang="en"] .band.hero h1 {
     transform: translateY(-24px);
   }
 }
+
+/* Not-found scene */
+.off-track {
+  min-height: calc(100dvh - var(--top-height));
+  background: var(--ink);
+  color: var(--white);
+}
+
+.off-track-scene svg {
+  display: block;
+  width: 100%;
+  max-width: var(--content);
+  margin-inline: auto;
+}
+
+.track-surface,
+.track-kerb,
+.track-line,
+.skid {
+  fill: none;
+}
+
+.track-surface {
+  stroke-width: 58;
+}
+
+.track-kerb {
+  stroke: var(--white);
+  stroke-width: 66;
+  stroke-dasharray: 14 14;
+}
+
+.track-line {
+  stroke: var(--white);
+  stroke-width: 1.5;
+  stroke-dasharray: 14 12;
+  opacity: 0.55;
+}
+
+.gravel {
+  fill: var(--taupe);
+}
+
+.gravel-grain {
+  fill: var(--ink);
+  opacity: 0.28;
+}
+
+.skid {
+  stroke: var(--black);
+  stroke-width: 3.5;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  opacity: 0.72;
+}
+
+.skid--drawn {
+  stroke-linecap: round;
+  stroke-dasharray: none;
+  stroke-dashoffset: 0;
+}
+
+.car-wheel {
+  fill: var(--black);
+}
+
+.car-wing {
+  fill: var(--white);
+}
+
+.car-body {
+  fill: var(--teal);
+}
+
+.car-stripe {
+  fill: var(--white);
+}
+
+.car-helmet {
+  fill: var(--taupe);
+  stroke: var(--black);
+  stroke-width: 1;
+}
+
+.dust {
+  fill: var(--paper);
+}
+
+.off-track-still {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .off-track-live {
+    display: none;
+  }
+
+  .off-track-still {
+    display: inline;
+  }
+}
+
+.off-track-text {
+  display: grid;
+  justify-items: start;
+  gap: 10px;
+  padding-block: 12px 40px;
+}
+
+.off-track-text .lead {
+  color: var(--muted-on-dark);
+}
+
+.off-track-code {
+  margin: 0;
+  font-family: var(--font-wide), sans-serif;
+  font-size: 1rem;
+  letter-spacing: 0.16em;
+  color: var(--taupe);
+}

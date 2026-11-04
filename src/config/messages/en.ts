@@ -318,9 +318,9 @@ export const en: Messages = {
     empty: "Nothing here yet.",
   },
   notFound: {
-    title: "You left the track",
-    lead: "We could not find this page.",
-    back: "Back to home",
+    title: "You went off track",
+    lead: "We could not find this page, but the circuit is still waiting for you.",
+    back: "Back on track",
   },
   email: {
     resetSubject: "Set a new password · Formula Week",

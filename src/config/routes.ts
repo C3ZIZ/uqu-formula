@@ -54,7 +54,7 @@ export const API_ROUTES = {
 } as const;
 
 // Files served from the public folder.
-export const ASSET_PATHS = { ogImage: "/og.jpg", icon: "/brand/icon.png" } as const;
+export const ASSET_PATHS = { ogImage: "/og.jpg", icon: "/brand/icon.png", asphalt: "/textures/asphalt-track.webp" } as const;
 export const OG_IMAGE_SIZE = { width: 1200, height: 630 } as const;
 
 // Finds the code inside any scanned link to this site.

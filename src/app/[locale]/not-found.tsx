@@ -1,25 +1,14 @@
-// The not-found screen, shown in Arabic and English since it has no URL language to rely on.
-import Link from "next/link";
-import { Slashes } from "@/components/Slashes";
-import { DEFAULT_LOCALE } from "@/config/locales";
+// The not-found page: an animated car off the track, with a way back.
+import { NotFoundText } from "@/components/NotFoundText";
+import { OffTrackScene } from "@/components/OffTrackScene";
 import { getMessages } from "@/config/messages";
-import { localePath, PAGE_ROUTES } from "@/config/routes";
 
-/** Explains the page does not exist and offers a way back. */
+/** Shows the scene and hands both languages to the wording, which reads the address in the browser. */
 export default function NotFound() {
-  const text = getMessages(DEFAULT_LOCALE).notFound;
   return (
-    <main className="page">
-      <div className="band claim">
-        <Slashes />
-        <div className="content claim-inner">
-          <h1>{text.title}</h1>
-          <p className="lead">{text.lead}</p>
-          <Link className="button button--accent" href={localePath(DEFAULT_LOCALE, PAGE_ROUTES.home)}>
-            {text.back}
-          </Link>
-        </div>
-      </div>
+    <main className="page off-track">
+      <OffTrackScene />
+      <NotFoundText copies={{ ar: getMessages("ar").notFound, en: getMessages("en").notFound }} />
     </main>
   );
 }

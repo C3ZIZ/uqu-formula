@@ -8,7 +8,7 @@ import { LOCALE_DIRECTION, OG_LOCALES } from "@/config/locales";
 import { getMessages } from "@/config/messages";
 import { ASSET_PATHS, OG_IMAGE_SIZE } from "@/config/routes";
 import { getEnv } from "@/lib/env";
-import { pageLocale, type LocaleProps } from "@/lib/page";
+import { layoutLocale, type LocaleProps } from "@/lib/page";
 import "@/styles/tokens.css";
 import "@/styles/base.css";
 import "@/styles/components.css";
@@ -27,7 +27,7 @@ export const viewport: Viewport = { themeColor: "#0c272c", viewportFit: "cover",
 
 /** Sets the page title and description for the current language. */
 export async function generateMetadata({ params }: LocaleProps): Promise<Metadata> {
-  const locale = await pageLocale(params);
+  const locale = layoutLocale((await params).locale);
   const text = getMessages(locale);
   return {
     metadataBase: new URL(getEnv().APP_URL),
@@ -48,7 +48,7 @@ export async function generateMetadata({ params }: LocaleProps): Promise<Metadat
 
 /** Wraps every page with the document shell and navigation. */
 export default async function LocaleLayout({ children, params }: LocaleProps & { children: ReactNode }) {
-  const locale = await pageLocale(params);
+  const locale = layoutLocale((await params).locale);
   const text = getMessages(locale);
   return (
     <html
