@@ -11,6 +11,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { CoinCount } from "./CoinCount";
 import { Slashes } from "./Slashes";
+import { StartLights } from "./StartLights";
 
 interface ClaimResultProps {
   locale: Locale;
@@ -52,7 +53,12 @@ export function ClaimResult({ locale, token, text, errors, unit }: ClaimResultPr
     <div className="band claim" aria-live="polite">
       <Slashes />
       <div className="content claim-inner">
-        {!reply && !failure ? <p className="claim-working">{text.working}</p> : null}
+        {!reply && !failure ? (
+          <>
+            <StartLights />
+            <p className="claim-working">{text.working}</p>
+          </>
+        ) : null}
 
         {failure ? (
           <>

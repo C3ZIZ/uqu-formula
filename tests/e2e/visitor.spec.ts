@@ -111,7 +111,7 @@ test("a wrong password shows a clear message", async ({ page }) => {
 test("the unknown page screen offers a way back", async ({ page }) => {
   const response = await page.goto("/ar/no-such-page");
   expect(response?.status()).toBe(404);
-  await expect(page.getByRole("link", { name: "العودة للرئيسية" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "العودة إلى المسار" })).toBeVisible();
 });
 
 test("shared links carry a real preview image and description", async ({ page, request }) => {
@@ -163,4 +163,28 @@ test("nothing tells visitors to show a code at the entrance, since they check th
   await page.goto("/ar/map");
   await page.locator(".map-canvas .map-zone--entrance").click();
   await expect(page.getByRole("dialog")).toContainText("امسح كود الدخول");
+});
+
+test("the map names its places itself, with no list under it, and a place still opens on tap", async ({ page }) => {
+  await page.goto("/ar/map");
+  const stage = page.locator(".map-zone", { hasText: "المسرح الرئيسي" });
+  await expect(stage).toBeVisible();
+  await expect(page.getByRole("heading", { name: "كل المناطق" })).toHaveCount(0);
+  await expect(page.locator(".zone-row")).toHaveCount(0);
+  await stage.click();
+  await expect(page.locator(".sheet")).toBeVisible();
+  await expect(page.locator(".map-zone--selected")).toHaveCount(1);
+});
+
+test("the waiting screen shows start lights while a scan is being counted", async ({ page }) => {
+  await page.route("**/api/coins/claim", async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 800));
+    await route.continue();
+  });
+  await page.goto("/ar/register");
+  await registerByForm(page, "زائر", uniqueEmail());
+  await expect(page).toHaveURL(/\/ar\/badge$/);
+  await page.goto("/scan/UQU-PIT-222222");
+  await expect(page.locator(".start-lights")).toBeVisible();
+  await expect(page.locator(".start-lights")).toHaveCount(0);
 });

@@ -103,7 +103,6 @@ export const ar = {
   map: {
     title: "الخريطة",
     lead: "اضغط على أي منطقة لمعرفة تفاصيلها.",
-    listTitle: "كل المناطق",
     inThisZone: "في هذه المنطقة",
     noItems: "لا توجد فقرات مجدولة هنا.",
     close: "إغلاق",

@@ -12,6 +12,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { BadgeMedal } from "./BadgeMedal";
 import { Slashes } from "./Slashes";
+import { StartLights } from "./StartLights";
 
 const VIBRATE_MS = 120;
 const MEDAL_SIZE = 112;
@@ -60,7 +61,12 @@ export function BadgeResult({ locale, token, text, errors }: BadgeResultProps) {
       ) : null}
       <Slashes />
       <div className="content claim-inner">
-        {!reply && !failure ? <p className="claim-working">{text.working}</p> : null}
+        {!reply && !failure ? (
+          <>
+            <StartLights />
+            <p className="claim-working">{text.working}</p>
+          </>
+        ) : null}
 
         {failure ? (
           <>

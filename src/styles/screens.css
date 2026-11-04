@@ -271,6 +271,22 @@ html[lang="en"] .band.hero h1 {
   text-align: center;
   clip-path: polygon(7% 0, 100% 0, 93% 100%, 0 100%);
   transition: transform var(--fast) var(--ease-out);
+  animation: zone-in 340ms var(--ease-out) backwards;
+  animation-delay: calc(var(--reveal, 0) * 35ms);
+}
+
+@keyframes zone-in {
+  from {
+    opacity: 0;
+    transform: scale(0.88);
+  }
+}
+
+.map-zone--selected {
+  z-index: 1;
+  outline: 3px solid var(--taupe);
+  outline-offset: -3px;
+  clip-path: none;
 }
 
 .map-zone:active {
@@ -318,31 +334,6 @@ html[lang="en"] .band.hero h1 {
   font-size: 0.8125rem;
 }
 
-.zone-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  min-height: 44px;
-  padding: 0;
-  border: 0;
-  background: none;
-  text-align: start;
-}
-
-.zone-row-name {
-  flex: 1;
-  font-weight: 700;
-}
-
-.zone-swatch {
-  flex: none;
-  width: 20px;
-  height: 16px;
-  border: 1px solid var(--ink);
-  transform: skewX(-14deg);
-}
-
 .sheet {
   position: fixed;
   inset-block: auto 0;
@@ -361,6 +352,13 @@ html[lang="en"] .band.hero h1 {
 
 .sheet::backdrop {
   background: rgb(0 0 0 / 55%);
+  animation: fade-in var(--medium) var(--ease-out);
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
 }
 
 .sheet-body {
@@ -569,6 +567,24 @@ html[lang="en"] .band.hero h1 {
   background-repeat: no-repeat;
 }
 
+/* A sweeping line shows the camera is reading, and it only runs while the scanner is open. */
+.scanner-frame::after {
+  content: "";
+  position: absolute;
+  inset-inline: 6px;
+  top: 0;
+  height: 2px;
+  background: var(--taupe);
+  box-shadow: 0 0 12px var(--taupe);
+  animation: scan-sweep 1.8s ease-in-out infinite alternate;
+}
+
+@keyframes scan-sweep {
+  to {
+    top: calc(100% - 2px);
+  }
+}
+
 .scanner-message {
   position: absolute;
   inset-inline: 0;
@@ -650,6 +666,51 @@ html[lang="en"] .band.hero h1 {
 
 .claim-total b {
   color: var(--white);
+}
+
+/* Five start lights come on in turn while a scan is being counted. */
+.start-lights {
+  display: flex;
+  gap: 8px;
+}
+
+.start-light {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--line-on-dark);
+  animation: light-on 1.25s linear infinite;
+  animation-delay: calc(var(--light) * 160ms);
+}
+
+@keyframes light-on {
+  0%,
+  10% {
+    background: var(--line-on-dark);
+  }
+
+  20%,
+  70% {
+    background: var(--taupe);
+    box-shadow: 0 0 10px var(--taupe);
+  }
+
+  80%,
+  100% {
+    background: var(--line-on-dark);
+  }
+}
+
+/* The result icon arrives with a short pop, so the outcome of a scan is noticed at once. */
+.claim-inner > svg {
+  animation: result-pop 380ms var(--ease-out) backwards;
+}
+
+@keyframes result-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
 }
 
 .claim-working {
@@ -791,6 +852,19 @@ html[lang="en"] .band.hero h1 {
   display: flex;
   gap: 14px;
   align-items: center;
+  animation: rise var(--medium) var(--ease-out) backwards;
+}
+
+.visitor-badge:nth-child(2) {
+  animation-delay: 50ms;
+}
+
+.visitor-badge:nth-child(3) {
+  animation-delay: 100ms;
+}
+
+.visitor-badge:nth-child(n + 4) {
+  animation-delay: 150ms;
 }
 
 .medal-reveal {
@@ -930,6 +1004,7 @@ html[lang="en"] .band.hero h1 {
 }
 
 .delete-blocked {
+  animation: rise var(--fast) var(--ease-out);
   margin-block-start: 10px;
   font-weight: 500;
 }

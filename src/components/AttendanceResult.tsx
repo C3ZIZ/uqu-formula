@@ -12,6 +12,7 @@ import { CalendarX, CircleCheck, CircleX, History } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Slashes } from "./Slashes";
+import { StartLights } from "./StartLights";
 
 const VIBRATE_MS = 120;
 
@@ -60,7 +61,12 @@ export function AttendanceResult({ locale, token, text, errors }: AttendanceResu
       ) : null}
       <Slashes />
       <div className="content claim-inner">
-        {!reply && !failure ? <p className="claim-working">{text.working}</p> : null}
+        {!reply && !failure ? (
+          <>
+            <StartLights />
+            <p className="claim-working">{text.working}</p>
+          </>
+        ) : null}
 
         {failure ? (
           <>

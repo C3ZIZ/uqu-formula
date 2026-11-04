@@ -104,7 +104,6 @@ export const en: Messages = {
   map: {
     title: "Map",
     lead: "Tap any area to see its details.",
-    listTitle: "All areas",
     inThisZone: "In this area",
     noItems: "Nothing is scheduled here.",
     close: "Close",
