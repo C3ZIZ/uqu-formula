@@ -108,9 +108,7 @@ describe("replacing every code with the readable format", () => {
 
     await applyMigration(scratch, 4);
 
-    /**
-     *
-     */
+    /** Builds the pattern for a code with the given word. */
     const pattern = (word: string) => new RegExp(`^UQU-${word}-[2-9A-HJKMNP-TV-Z]{6}$`);
     const checks: [string, string][] = [
       ["SELECT badge_code AS code FROM users", "RACER"],
@@ -125,5 +123,58 @@ describe("replacing every code with the readable format", () => {
     }
     const coins = await scratch.query(`SELECT coins FROM coin_codes`);
     expect(coins.rows).toEqual([{ coins: 5 }, { coins: 5 }]);
+  });
+});
+
+describe("starting from zero before the event", () => {
+  let scratch: Client;
+
+  beforeAll(async () => {
+    await onServer(`DROP DATABASE IF EXISTS ${SCRATCH_DB}`);
+    await onServer(`CREATE DATABASE ${SCRATCH_DB}`);
+    const url = new URL(adminUrl);
+    url.pathname = `/${SCRATCH_DB}`;
+    scratch = new Client({ connectionString: url.toString() });
+    await scratch.connect();
+    for (const idx of [0, 1, 2, 3, 4, 5, 6]) await applyMigration(scratch, idx);
+  });
+
+  afterAll(async () => {
+    await scratch.end();
+    await onServer(`DROP DATABASE IF EXISTS ${SCRATCH_DB}`);
+  });
+
+  it("empties every table and keeps the tables themselves", async () => {
+    const user = await scratch.query(
+      `INSERT INTO users (name, email, phone, password_hash, badge_code) VALUES ('P', 'p@example.com', '05', 'h', 'UQU-RACER-222222') RETURNING id`,
+    );
+    const zone = await scratch.query(
+      `INSERT INTO zones (name_ar, name_en, type, x, y, width, height) VALUES ('م', 'z', 'stage', 1, 1, 5, 5) RETURNING id`,
+    );
+    await scratch.query(`INSERT INTO check_ins (user_id, event_date) VALUES ($1, '2026-12-13')`, [user.rows[0].id]);
+    await scratch.query(`INSERT INTO agenda_items (title_ar, title_en, day, start_time, end_time, zone_id) VALUES ('ف', 'i', 1, '09:00', '10:00', $1)`, [zone.rows[0].id]);
+    await scratch.query(`INSERT INTO coin_codes (token, label_ar, label_en, coins) VALUES ('UQU-PIT-222222', 'أ', 'a', 5)`);
+    await scratch.query(`INSERT INTO attendance_codes (token, event_date, zone_id) VALUES ('UQU-GRID-222222', '2026-12-13', $1)`, [zone.rows[0].id]);
+    await scratch.query(`INSERT INTO badges (kind, token, name_ar, name_en, icon) VALUES ('challenge', 'UQU-PODIUM-222222', 'ب', 'b', 'flag')`);
+
+    await applyMigration(scratch, 7);
+
+    const tables = [
+      "users",
+      "password_resets",
+      "check_ins",
+      "zones",
+      "agenda_items",
+      "coin_codes",
+      "coin_claims",
+      "attendance_codes",
+      "badges",
+      "badge_images",
+      "badge_claims",
+    ];
+    for (const table of tables) {
+      const { rows } = await scratch.query(`SELECT count(*)::int AS value FROM ${table}`);
+      expect(rows[0].value, table).toBe(0);
+    }
   });
 });

@@ -17,6 +17,7 @@ const phoneField = z
   .pipe(z.string().regex(/^\+?\d{8,15}$/));
 const shortText = z.string().trim().min(1).max(LIMITS.labelMaxLength);
 const longText = z.string().trim().max(LIMITS.textMaxLength).default("");
+const requiredLongText = z.string().trim().min(1).max(LIMITS.textMaxLength);
 const timeField = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/);
 
 export const registerSchema = z.object({
@@ -38,6 +39,8 @@ export const resetPasswordSchema = z.object({ token: z.string().min(1), password
 export const claimSchema = z.object({ token: z.string().trim().min(1).max(64) });
 
 export const roleSchema = z.object({ role: z.enum(ROLE_LIST) });
+
+export const activeSchema = z.object({ isActive: z.boolean() });
 
 export const coinCodeSchema = z.object({
   labelAr: shortText,
@@ -97,8 +100,8 @@ const badgeImageField = z
 export const badgeUpdateSchema = z.object({
   nameAr: shortText,
   nameEn: shortText,
-  challengeAr: longText,
-  challengeEn: longText,
+  challengeAr: requiredLongText,
+  challengeEn: requiredLongText,
   icon: z.enum(BADGE_ICONS),
   isActive: z.boolean().default(true),
   image: badgeImageField,

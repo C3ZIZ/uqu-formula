@@ -50,6 +50,13 @@
       "when": 1793783547151,
       "tag": "0006_challenge-badges",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1793789152614,
+      "tag": "0007_fresh-start",
+      "breakpoints": true
     }
   ]
 }

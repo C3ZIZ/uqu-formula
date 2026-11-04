@@ -47,13 +47,17 @@ export default async function CoinsPage({ params }: LocaleProps) {
                         {text.coins.badgeEarned}
                         {badge.earnedAt ? ` · ${formatDateTime(badge.earnedAt, locale)}` : ""}
                       </>
-                    ) : badge.kind === BADGE_KINDS_BY_NAME.allDays ? (
-                      <>
-                        {text.coins.attended} <span className="numeric">{badge.attended}</span> {text.coins.attendedOf}{" "}
-                        <span className="numeric">{badge.totalDays}</span> {text.coins.attendedDays}
-                      </>
                     ) : (
-                      pickLocalized(locale, badge.challengeAr, badge.challengeEn)
+                      <>
+                        {pickLocalized(locale, badge.challengeAr, badge.challengeEn)}
+                        {badge.kind === BADGE_KINDS_BY_NAME.allDays ? (
+                          <>
+                            {" · "}
+                            {text.coins.attended} <span className="numeric">{badge.attended}</span> {text.coins.attendedOf}{" "}
+                            <span className="numeric">{badge.totalDays}</span> {text.coins.attendedDays}
+                          </>
+                        ) : null}
+                      </>
                     )}
                   </span>
                 </span>

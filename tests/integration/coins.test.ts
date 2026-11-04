@@ -7,6 +7,8 @@ import {
   claimCode,
   createCoinCode,
   deleteCoinCode,
+  getCoinCode,
+  setCoinCodeActive,
   getCoinSummary,
   listCoinCodes,
   updateCoinCode,
@@ -81,6 +83,14 @@ describe("coin codes", () => {
     await claimCode(user.id, code.token);
     await updateCoinCode(code.id, { ...CODE, coins: 999 });
     expect((await getCoinSummary(user.id, "en")).total).toBe(50);
+  });
+
+  it("switches on and off without touching anything else", async () => {
+    const code = await createCoinCode(CODE);
+    await updateCoinCode(code.id, { ...CODE, coins: 75 });
+    expect(await setCoinCodeActive(code.id, false)).toBe(true);
+    expect(await getCoinCode(code.id)).toMatchObject({ isActive: false, coins: 75 });
+    expect(await setCoinCodeActive("00000000-0000-4000-8000-000000000000", true)).toBe(false);
   });
 
   it("refuses to delete a code that has claims", async () => {

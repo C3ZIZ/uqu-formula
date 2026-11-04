@@ -27,7 +27,7 @@ docker compose up -d --build --wait
 - Site: <https://localhost> (the browser warns about the local certificate)
 - Caught emails: <http://localhost:8025>
 
-Migrations and the seed run automatically. The seed creates the admin from `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD`, and adds sample content only to an empty database.
+Migrations and the seed run automatically. The seed creates the admin from `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD`. Sample content is added to an empty database only when `SEED_SAMPLE_CONTENT` is `true`, which the local stack sets and production does not.
 
 ## Test
 

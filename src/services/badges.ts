@@ -66,9 +66,9 @@ export async function isBadgeToken(rawToken: string): Promise<boolean> {
   return Boolean(badge);
 }
 
-/** Returns the all-days badge if this visitor has now attended every day. */
-export async function completedAllDaysBadge(userId: string) {
-  if ((await attendedDays(userId)) < TOTAL_DAYS) return undefined;
+/** Returns the all-days badge if attending this date has just completed every day. Other dates change nothing. */
+export async function completedAllDaysBadge(userId: string, eventDate: string) {
+  if (!EVENT_DATES.includes(eventDate) || (await attendedDays(userId)) < TOTAL_DAYS) return undefined;
   const [badge] = await db
     .select({ nameAr: badges.nameAr, nameEn: badges.nameEn })
     .from(badges)
@@ -101,7 +101,8 @@ export async function getVisitorBadges(userId: string) {
   return rows
     .map(({ claimedAt, ...badge }) => ({
       ...badge,
-      earned: badge.kind === BADGE_KINDS_BY_NAME.allDays ? attended >= TOTAL_DAYS : claimedAt !== null,
+      // The all-days badge is worked out, not stored, so switching it off hides it until it is switched on again.
+      earned: badge.kind === BADGE_KINDS_BY_NAME.allDays ? badge.isActive && attended >= TOTAL_DAYS : claimedAt !== null,
       earnedAt: claimedAt,
       attended,
       totalDays: TOTAL_DAYS,
@@ -201,6 +202,12 @@ export async function updateBadge(id: string, input: BadgeUpdateInput): Promise<
     }
     return true;
   });
+}
+
+/** Switches a badge on or off, leaving everything else as it is. Returns false if it does not exist. */
+export async function setBadgeActive(id: string, isActive: boolean): Promise<boolean> {
+  const rows = await db.update(badges).set({ isActive }).where(eq(badges.id, id)).returning({ id: badges.id });
+  return rows.length > 0;
 }
 
 /** Deletes a badge unless a visitor earned it. */

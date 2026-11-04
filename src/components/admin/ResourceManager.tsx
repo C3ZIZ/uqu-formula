@@ -30,7 +30,8 @@ interface ResourceManagerProps<T extends { id: string }> {
   itemUrl: (id: string) => string;
   toValues: (item: T) => FormValues;
   renderItem: (item: T) => ReactNode;
-  renderActions?: (item: T, refresh: () => void) => ReactNode;
+  renderActions?: (item: T, refresh: () => void, reportError: (code: string) => void) => ReactNode;
+  toBody?: (values: FormValues) => FormValues;
   hideEdit?: boolean;
   renderFormExtra?: (values: FormValues, setValues: (changes: FormValues) => void) => ReactNode;
   text: Messages["admin"];
@@ -81,7 +82,7 @@ function FormField({ spec, value, invalid, invalidText, onChange }: {
 /** Lists items and handles adding, editing, and two-step deleting. */
 export function ResourceManager<T extends { id: string }>(props: ResourceManagerProps<T>) {
   const { items, fields, emptyValues, createUrl, itemUrl, toValues, renderItem, renderActions, renderFormExtra } = props;
-  const { locale, editFields, text, errors, fieldErrors, hideEdit } = props;
+  const { locale, editFields, toBody, text, errors, fieldErrors, hideEdit } = props;
   const router = useRouter();
   const [editing, setEditing] = useState<string | null>(null);
   const [values, setValuesState] = useState<FormValues>(emptyValues);
@@ -121,7 +122,7 @@ export function ResourceManager<T extends { id: string }>(props: ResourceManager
     setBusy(true);
     setError(undefined);
     const isNew = editing === "new";
-    const result = await sendJson(isNew ? createUrl : itemUrl(editing ?? ""), isNew ? "POST" : "PUT", values);
+    const result = await sendJson(isNew ? createUrl : itemUrl(editing ?? ""), isNew ? "POST" : "PUT", toBody ? toBody(values) : values);
     setBusy(false);
     if (result.ok) {
       setEditing(null);
@@ -201,7 +202,7 @@ export function ResourceManager<T extends { id: string }>(props: ResourceManager
                       {text.form.edit}
                     </button>
                   )}
-                  {renderActions?.(item, refresh)}
+                  {renderActions?.(item, refresh, (code) => setError(errorText(code)))}
                   <button type="button" className="text-action" onClick={() => remove(item.id)}>
                     {confirming === item.id ? text.form.confirmDelete : text.form.delete}
                   </button>

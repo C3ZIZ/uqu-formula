@@ -39,3 +39,8 @@ export function formatEventDate(date: string, locale: Locale): string {
 export function agendaOpenDay(today: string): number {
   return EVENT.days.find((day) => day.date === today)?.number ?? EVENT.days[0].number;
 }
+
+/** Tells whether a date is one of the event's days. */
+export function isEventDate(date: string): boolean {
+  return EVENT.days.some((day) => day.date === date);
+}

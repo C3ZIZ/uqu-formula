@@ -38,11 +38,11 @@ export function CoinCodesManager({ locale, items, unit, text, errors, fieldError
     { name: "coins", label: text.form.coins, kind: "number", latin: true },
   ];
 
-  /** Switches a code on or off, keeping its other values. */
-  async function toggle(code: CoinCodeRow, refresh: () => void) {
-    const { labelAr, labelEn, coins, isActive } = code;
-    const result = await sendJson(API_ROUTES.adminCoinCode(code.id), "PUT", { labelAr, labelEn, coins, isActive: !isActive });
+  /** Switches a code on or off and reports a failure. */
+  async function toggle(code: CoinCodeRow, refresh: () => void, reportError: (code: string) => void) {
+    const result = await sendJson(API_ROUTES.adminCoinCode(code.id), "PATCH", { isActive: !code.isActive });
     if (result.ok) refresh();
+    else reportError(result.error);
   }
 
   return (
@@ -69,14 +69,14 @@ export function CoinCodesManager({ locale, items, unit, text, errors, fieldError
           </p>
         </div>
       )}
-      renderActions={(code, refresh) => (
+      renderActions={(code, refresh, reportError) => (
         <>
           <Link className="text-action" href={localePath(locale, PAGE_ROUTES.adminCoinCodePrint(code.id))}>
             <Printer size={16} aria-hidden="true" />
             {copy.print}
           </Link>
           <a className="text-action" href={API_ROUTES.adminCoinCodeQr(code.id)} download>{copy.download}</a>
-          <button type="button" className="text-action" onClick={() => toggle(code, refresh)}>
+          <button type="button" className="text-action" onClick={() => toggle(code, refresh, reportError)}>
             {code.isActive ? copy.deactivate : copy.activate}
           </button>
         </>

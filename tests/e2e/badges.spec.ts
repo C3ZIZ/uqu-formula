@@ -25,6 +25,7 @@ test("an admin creates a challenge badge with an icon, adds an image, prints it,
   await page.getByLabel("الاسم بالعربية").fill(name);
   await page.getByLabel("الاسم بالإنجليزية").fill("Champion");
   await page.getByLabel("وصف التحدي بالعربية").fill("غيّر الإطارات في ١٠ ثوان");
+  await page.getByLabel("وصف التحدي بالإنجليزية").fill("Change the tires in 10 seconds");
   await page.getByRole("radio", { name: "علم" }).check({ force: true });
   await page.getByRole("button", { name: "حفظ" }).click();
 
@@ -93,7 +94,7 @@ test("a visitor sees a challenge, scans its badge once, and then sees it earned"
   await expect(page.locator(".toast")).toHaveCount(0);
 
   await admin.put(`/api/admin/badges/${badge.id}`, {
-    data: { nameAr: name, nameEn: "Pit stop", challengeAr: "", challengeEn: "", icon: "flag", isActive: false },
+    data: { nameAr: name, nameEn: "Pit stop", challengeAr: "غيّر الإطارات", challengeEn: "Change the tires", icon: "flag", isActive: false },
   });
   const otherContext = await browser.newContext({ baseURL, ignoreHTTPSErrors: true });
   const other = await otherContext.newPage();
@@ -107,3 +108,60 @@ test("a visitor sees a challenge, scans its badge once, and then sees it earned"
   await otherContext.close();
   await admin.dispose();
 });
+
+test("the badge form uploads the picture once, and shows keyboard focus on the picker", async ({ page }) => {
+  await openBadges(page);
+  await page.getByRole("button", { name: "إضافة" }).click();
+  await page.getByLabel("الاسم بالعربية").fill(`صورة ${Date.now()}`);
+  await page.getByLabel("الاسم بالإنجليزية").fill("Picture");
+  await page.getByLabel("وصف التحدي بالعربية").fill("تحدي");
+  await page.getByLabel("وصف التحدي بالإنجليزية").fill("Challenge");
+  await page.locator('input[type="file"]').setInputFiles({ name: "badge.png", mimeType: "image/png", buffer: TINY_PNG });
+  await expect(page.locator(".badge-image-preview")).toBeVisible();
+
+  const [request] = await Promise.all([
+    page.waitForRequest((sent) => sent.method() === "POST" && sent.url().endsWith("/api/admin/badges")),
+    page.getByRole("button", { name: "حفظ" }).click(),
+  ]);
+  const body = request.postDataJSON();
+  expect(body.image).toBeTruthy();
+  expect(body).not.toHaveProperty("previewUrl");
+
+  await page.getByRole("button", { name: "إضافة" }).click();
+  await page.locator(".icon-choice input").first().focus();
+  for (let press = 0; press < 3; press += 1) {
+    await page.keyboard.press("Tab");
+    if (await page.locator('input[type="file"]').evaluate((input) => input === document.activeElement)) break;
+  }
+  await expect(page.locator('input[type="file"]')).toBeFocused();
+  const outline = await page.locator(".badge-image-pick").evaluate((label) => getComputedStyle(label).outlineStyle);
+  expect(outline).toBe("solid");
+});
+
+test("a failed on-off switch tells the admin, and only sends the switch", async ({ page, playwright, baseURL }) => {
+  const admin = await playwright.request.newContext({ baseURL, ignoreHTTPSErrors: true });
+  await loginAdminApi(admin);
+  const name = `مفتاح ${Date.now()}`;
+  const created = await admin.post("/api/admin/badges", {
+    data: { kind: "challenge", nameAr: name, nameEn: "Switch", challengeAr: "تحدي", challengeEn: "Challenge", icon: "flag", isActive: true },
+  });
+  expect(created.status()).toBe(201);
+  await openBadges(page);
+  const row = page.locator(".resource-list li", { hasText: name });
+
+  await page.route("**/api/admin/badges/*", (route) => route.abort());
+  await row.getByRole("button", { name: "إيقاف" }).click();
+  await expect(page.locator(".form-error")).toContainText("تعذر الاتصال");
+  await page.unroute("**/api/admin/badges/*");
+
+  const [request] = await Promise.all([
+    page.waitForRequest((sent) => sent.url().includes("/api/admin/badges/")),
+    row.getByRole("button", { name: "إيقاف" }).click(),
+  ]);
+  expect(request.method()).toBe("PATCH");
+  expect(request.postDataJSON()).toEqual({ isActive: false });
+  await expect(row).toContainText("موقوف");
+  await admin.delete(`/api/admin/badges/${(await created.json()).id}`);
+  await admin.dispose();
+});
+
