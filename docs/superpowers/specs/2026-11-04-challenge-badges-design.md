@@ -75,7 +75,7 @@ Cost accepted by the owner: if a visitor's phone or the door code fails, nobody 
 
 ## Not-found page
 
-An inline SVG scene: a Formula car follows the track, loses the bend, skids into the gravel, and stops in a dust cloud, then the scene replays after a pause. It needs no JavaScript. With reduced motion on, the car sits still off the track. Below it are "404", "خرجت عن المسار", and a button home. All not-found addresses show it, including ones with no language in them, using the saved language.
+An inline SVG scene: a Formula car follows the track, loses the bend, skids into the gravel, and stops in a dust cloud, then the scene replays after a pause. It needs no JavaScript. With reduced motion on, the car sits still off the track. Below it are "404", "خرجت عن المسار", and a button home. All not-found addresses show it, in the address's language. Addresses with no language in them use Arabic, because reading a cookie there would make cached pages dynamic.
 
 ## Testing
 
