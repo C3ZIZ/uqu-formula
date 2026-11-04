@@ -1,4 +1,4 @@
-// Tests staff check-in, the admin panel, roles, CSV export, and password reset.
+// Tests the admin panel, roles, CSV export, and password reset.
 import { expect, test } from "@playwright/test";
 import { ADMIN, loginByForm, registerByApi, registerByForm, uniqueEmail } from "./helpers";
 
@@ -9,8 +9,6 @@ test("visitors cannot open the admin panel or its API", async ({ page, request }
   await registerByForm(page, "زائر", uniqueEmail());
   await expect(page).toHaveURL(/\/ar\/badge$/);
   await page.goto("/ar/admin");
-  await expect(page).toHaveURL(/\/ar$/);
-  await page.goto("/ar/staff/check-in");
   await expect(page).toHaveURL(/\/ar$/);
   const status = await page.evaluate(async () => (await fetch("/api/admin/registrants/csv")).status);
   expect(status).toBe(403);
@@ -107,48 +105,6 @@ test("an admin places a new zone by tapping the map", async ({ page }) => {
   await expect(page.locator(".resource-list")).not.toContainText(name);
 });
 
-test("staff check in a visitor once per day, and the badge and totals update", async ({ browser, page, baseURL }) => {
-  const visitorContext = await browser.newContext({ baseURL, ignoreHTTPSErrors: true });
-  const visitor = await visitorContext.newPage();
-  await visitor.goto("/ar/register");
-  const name = `حاضر ${Date.now()}`;
-  await registerByForm(visitor, name, uniqueEmail());
-  await expect(visitor).toHaveURL(/\/ar\/badge$/);
-  await expect(visitor.getByRole("status")).toContainText("لم يُسجل حضورك");
-  const badgeCode = (await visitor.locator(".badge-code .numeric").textContent()) ?? "";
-
-  await page.goto("/ar/login");
-  await loginByForm(page, ADMIN.email, ADMIN.password);
-  await expect(page).toHaveURL(/\/ar$/);
-  await page.getByRole("link", { name: "تسجيل الحضور" }).click();
-  const countBefore = Number(await page.locator(".desk-count .numeric").textContent());
-  await page.getByRole("button", { name: "تشغيل الماسح" }).click();
-  await page.getByLabel("أو اكتب الرمز").fill(badgeCode.toLowerCase());
-  await page.getByRole("button", { name: "تأكيد" }).click();
-  await expect(page.locator(".result--good")).toContainText(name);
-  await expect(page.locator(".desk-count .numeric")).toHaveText(String(countBefore + 1));
-
-  // A badge left in view keeps reading: the success message must stay on screen.
-  await page.waitForTimeout(3000);
-  await page.getByLabel("أو اكتب الرمز").fill(badgeCode);
-  await page.getByRole("button", { name: "تأكيد" }).click();
-  await page.waitForTimeout(500);
-  await expect(page.locator(".result--good")).toContainText(name);
-
-  await page.reload();
-  await page.getByRole("button", { name: "تشغيل الماسح" }).click();
-  await page.getByLabel("أو اكتب الرمز").fill(badgeCode);
-  await page.getByRole("button", { name: "تأكيد" }).click();
-  await expect(page.locator(".result--warn")).toContainText("مسجل حضوره مسبقًا");
-  await page.getByLabel("أو اكتب الرمز").fill("FWNOTAREALCODE");
-  await page.getByRole("button", { name: "تأكيد" }).click();
-  await expect(page.locator(".result--bad")).toContainText("لا يوجد زائر");
-
-  await visitor.reload();
-  await expect(visitor.getByRole("status")).toContainText("سُجل حضورك");
-  await visitorContext.close();
-});
-
 test("the registrant list searches, and the CSV opens with correct Arabic", async ({ page, request }) => {
   const name = `مسجل${Date.now()}`;
   const email = await registerByApi(request, name);
@@ -170,27 +126,28 @@ test("the registrant list searches, and the CSV opens with correct Arabic", asyn
   expect(csv.text).toContain(name);
 });
 
-test("an admin promotes a visitor to staff, and access takes effect immediately", async ({ browser, page, baseURL }) => {
+test("an admin promotes a visitor to admin, and access takes effect immediately", async ({ browser, page, baseURL }) => {
   const visitorContext = await browser.newContext({ baseURL, ignoreHTTPSErrors: true });
   const visitor = await visitorContext.newPage();
   const email = uniqueEmail();
   await visitor.goto("/ar/register");
-  await registerByForm(visitor, "منظم جديد", email);
+  await registerByForm(visitor, "مسؤول جديد", email);
   await expect(visitor).toHaveURL(/\/ar\/badge$/);
 
   await page.goto("/ar/login");
   await loginByForm(page, ADMIN.email, ADMIN.password);
   await expect(page).toHaveURL(/\/ar$/);
   await page.goto(`/ar/admin/registrants?q=${encodeURIComponent(email)}`);
-  await page.locator(".role-select select").selectOption("staff");
+  await expect(page.locator(".role-select option")).toHaveCount(2);
+  await page.locator(".role-select select").selectOption("admin");
   await expect.poll(async () => {
-    await visitor.goto("/ar/staff/check-in");
+    await visitor.goto("/ar/admin");
     return visitor.url();
-  }).toMatch(/\/ar\/staff\/check-in$/);
+  }).toMatch(/\/ar\/admin$/);
 
   await page.locator(".role-select select").selectOption("visitor");
   await expect.poll(async () => {
-    await visitor.goto("/ar/staff/check-in");
+    await visitor.goto("/ar/admin");
     return visitor.url();
   }).toMatch(/\/ar$/);
   await visitorContext.close();

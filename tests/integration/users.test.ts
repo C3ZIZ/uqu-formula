@@ -139,7 +139,7 @@ describe("roles and registrant list", () => {
     const [first, second] = [await makeUser(), await makeUser()];
     await setUserRole(first.id, "admin");
     await setUserRole(second.id, "admin");
-    expect(await setUserRole(first.id, "staff")).toEqual({ ok: true });
+    expect(await setUserRole(first.id, "visitor")).toEqual({ ok: true });
   });
 
   it("searches by name, email, and phone", async () => {

@@ -2,7 +2,7 @@
 
 The event website for Formula Week at Umm Al-Qura University. It is Arabic-first with English support and built for phones.
 
-Visitors register, follow the agenda, find places on a map, show a QR badge, collect coins, and scan a daily code at the entrance to record attendance. Staff can also scan badges. Admins manage content, coin and attendance codes, roles, and the registrant list.
+Visitors register, follow the agenda, find places on a map, show a QR badge, collect coins, and scan a daily code at the entrance to record attendance. Admins manage content, coin and attendance codes, roles, and the registrant list.
 
 ## Stack
 

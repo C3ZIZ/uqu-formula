@@ -29,7 +29,7 @@ export default async function PrintAttendanceCodePage({ params }: PrintProps) {
     <main className="page print-page">
       <div className="content print-sheet">
         <Logo size={44} />
-        <h1>{text.staff.title}</h1>
+        <h1>{text.admin.attendanceCodes.printTitle}</h1>
         <p className="print-coins">{formatEventDate(code.eventDate, locale)}</p>
         <div className="print-qr" dangerouslySetInnerHTML={{ __html: qr }} />
         <p>{text.admin.attendanceCodes.printHint}</p>

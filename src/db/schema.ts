@@ -49,7 +49,6 @@ export const checkIns = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     eventDate: date("event_date").notNull(),
-    checkedInBy: uuid("checked_in_by").references(() => users.id, { onDelete: "set null" }),
     checkedInAt: timestamp("checked_in_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [primaryKey({ columns: [table.userId, table.eventDate] }), index("check_ins_date_idx").on(table.eventDate)],
@@ -113,7 +112,7 @@ export const coinClaims = pgTable(
   (table) => [primaryKey({ columns: [table.userId, table.codeId] })],
 );
 
-// One door code per event date. Scans are recorded in check_ins, shared with the staff scanner.
+// One door code per event date. Scans are recorded in check_ins.
 export const attendanceCodes = pgTable("attendance_codes", {
   id: uuid("id").primaryKey().defaultRandom(),
   token: text("token").notNull().unique(),

@@ -36,8 +36,6 @@ export const resetPasswordSchema = z.object({ token: z.string().min(1), password
 
 export const claimSchema = z.object({ token: z.string().trim().min(1).max(64) });
 
-export const checkInSchema = z.object({ badgeCode: z.string().trim().min(1).max(64) });
-
 export const roleSchema = z.object({ role: z.enum(ROLE_LIST) });
 
 export const coinCodeSchema = z.object({

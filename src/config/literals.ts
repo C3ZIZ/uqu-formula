@@ -1,7 +1,7 @@
 // Fixed values shared across the app: roles, error codes, cookie names, and zone types.
-export const ROLES = { visitor: "visitor", staff: "staff", admin: "admin" } as const;
+export const ROLES = { visitor: "visitor", admin: "admin" } as const;
 export type Role = (typeof ROLES)[keyof typeof ROLES];
-export const ROLE_LIST = [ROLES.visitor, ROLES.staff, ROLES.admin] as const;
+export const ROLE_LIST = [ROLES.visitor, ROLES.admin] as const;
 
 export const ERROR_CODES = {
   validation: "VALIDATION",
@@ -32,7 +32,6 @@ export type ClaimStatus = (typeof CLAIM_STATUS)[keyof typeof CLAIM_STATUS];
 export const CHECK_IN_STATUS = {
   checkedIn: "checked_in",
   already: "already",
-  unknown: "unknown",
   invalid: "invalid",
   wrongDay: "wrong_day",
 } as const;

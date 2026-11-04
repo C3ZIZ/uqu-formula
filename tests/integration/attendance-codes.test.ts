@@ -11,7 +11,7 @@ import {
   listAttendanceCodes,
   setAttendanceCodeActive,
 } from "@/services/attendance-codes";
-import { checkInByBadge, getAttendanceDays } from "@/services/checkins";
+import { getAttendanceDays } from "@/services/checkins";
 import { makeUser, resetDatabase } from "./helpers";
 
 const DAY_ONE = "2026-12-13";
@@ -29,12 +29,11 @@ async function makeCode(eventDate = DAY_ONE) {
 describe("attendance codes", () => {
   beforeEach(resetDatabase);
 
-  it("records a visitor who scans on the right day, with no staff member", async () => {
+  it("records a visitor who scans on the right day", async () => {
     const [visitor, code] = [await makeUser(), await makeCode()];
     expect(await checkInWithCode(visitor.id, code.token, ON_DAY_ONE)).toMatchObject({ status: "checked_in" });
     const [row] = await db.select().from(checkIns).where(eq(checkIns.userId, visitor.id));
     expect(row.eventDate).toBe(DAY_ONE);
-    expect(row.checkedInBy).toBeNull();
   });
 
   it("reports the first time on a second scan the same day", async () => {
@@ -81,13 +80,6 @@ describe("attendance codes", () => {
   it("accepts a lowercase typed token", async () => {
     const [visitor, code] = [await makeUser(), await makeCode()];
     expect((await checkInWithCode(visitor.id, code.token.toLowerCase(), ON_DAY_ONE)).status).toBe("checked_in");
-  });
-
-  it("shares one daily record with the staff badge scanner", async () => {
-    const [staff, visitor, code] = [await makeUser(), await makeUser(), await makeCode()];
-    await checkInByBadge(staff.id, visitor.badgeCode, ON_DAY_ONE);
-    expect((await checkInWithCode(visitor.id, code.token, LATE_ON_DAY_ONE)).status).toBe("already");
-    expect(await getAttendanceDays(visitor.id)).toEqual([DAY_ONE]);
   });
 
   it("recognizes its own tokens, even typed in lowercase, for the one scan button", async () => {

@@ -60,7 +60,7 @@ html[lang="en"] .band.hero h1 {
   font-size: 1.75rem;
 }
 
-.staff-links {
+.admin-link {
   display: flex;
   flex-wrap: wrap;
   gap: 4px 24px;
@@ -654,57 +654,6 @@ html[lang="en"] .band.hero h1 {
 
 .claim-working {
   font-size: 1.125rem;
-}
-
-/* Staff check-in */
-.desk {
-  display: grid;
-  gap: 16px;
-  margin-block-start: 8px;
-}
-
-.desk-count {
-  font-weight: 500;
-}
-
-.desk-count b {
-  font-size: 1.5rem;
-}
-
-.desk-result:empty {
-  display: none;
-}
-
-.result {
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
-  padding: 14px 16px;
-  animation: rise var(--fast) var(--ease-out);
-}
-
-.result > span {
-  display: grid;
-}
-
-.result-name {
-  font-size: 1.25rem;
-  font-weight: 700;
-}
-
-.result--good {
-  background: var(--deep);
-  color: var(--white);
-}
-
-.result--warn {
-  background: var(--taupe);
-  color: var(--black);
-}
-
-.result--bad {
-  background: var(--black);
-  color: var(--white);
 }
 
 /* Admin */

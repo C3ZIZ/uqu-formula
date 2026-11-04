@@ -7,7 +7,7 @@ const SOURCE_DIRS = ["src", "tests", "loadtest"];
 const SOURCE_FILE = /\.(ts|tsx|css|js)$/;
 const ARABIC = /[؀-ۿ]/;
 const ROUTE_LITERAL =
-  /["'`]\/(api|ar|en|login|register|agenda|map|badge|coins|admin|staff|scan|attend|forgot-password|reset-password)(\/|["'`])/;
+  /["'`]\/(api|ar|en|login|register|agenda|map|badge|coins|admin|scan|attend|forgot-password|reset-password)(\/|["'`])/;
 const TEXT_ALLOWED = ["src/config/", "src/db/sample-content.ts", "tests/"];
 const ROUTES_ALLOWED = ["src/config/routes.ts", "tests/", "loadtest/"];
 
