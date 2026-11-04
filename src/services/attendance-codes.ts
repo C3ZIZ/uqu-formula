@@ -1,9 +1,9 @@
 // Daily attendance codes: an admin creates one per date, and visitors scan it at the entrance.
 import { and, asc, eq, sql } from "drizzle-orm";
-import { CHECK_IN_STATUS, ERROR_CODES } from "@/config/literals";
+import { CHECK_IN_STATUS, CODE_KINDS, ERROR_CODES } from "@/config/literals";
 import { db } from "@/db/client";
 import { attendanceCodes, checkIns } from "@/db/schema";
-import { generateCoinToken } from "@/lib/codes";
+import { generateCode } from "@/lib/codes";
 import { riyadhDate } from "@/lib/dates";
 import { normalizeCode } from "@/lib/qr-payload";
 import type { AttendanceCodeInput } from "@/lib/validation";
@@ -72,7 +72,7 @@ export async function getAttendanceCode(id: string): Promise<AttendanceCode | un
 export async function createAttendanceCode(input: AttendanceCodeInput) {
   const [code] = await db
     .insert(attendanceCodes)
-    .values({ eventDate: input.eventDate, token: generateCoinToken() })
+    .values({ eventDate: input.eventDate, token: generateCode(CODE_KINDS.attendance) })
     .onConflictDoNothing({ target: attendanceCodes.eventDate })
     .returning();
   if (!code) return { ok: false as const, code: ERROR_CODES.attendanceDateTaken };

@@ -1,10 +1,10 @@
 // Coin codes and claims. The database's primary key guarantees one claim per visitor per code.
 import { and, desc, eq, sql, sum } from "drizzle-orm";
-import { CLAIM_STATUS, ERROR_CODES } from "@/config/literals";
+import { CLAIM_STATUS, CODE_KINDS, ERROR_CODES } from "@/config/literals";
 import type { Locale } from "@/config/locales";
 import { db } from "@/db/client";
 import { coinClaims, coinCodes } from "@/db/schema";
-import { generateCoinToken } from "@/lib/codes";
+import { generateCode } from "@/lib/codes";
 import { pickLocalized } from "@/lib/localized";
 import { normalizeCode } from "@/lib/qr-payload";
 import type { CoinCodeInput } from "@/lib/validation";
@@ -84,7 +84,7 @@ export async function getCoinCode(id: string): Promise<CoinCode | undefined> {
 
 /** Creates a code with a new random token. */
 export async function createCoinCode(input: CoinCodeInput): Promise<CoinCode> {
-  const [code] = await db.insert(coinCodes).values({ ...input, token: generateCoinToken() }).returning();
+  const [code] = await db.insert(coinCodes).values({ ...input, token: generateCode(CODE_KINDS.coin) }).returning();
   return code;
 }
 

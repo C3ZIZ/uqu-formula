@@ -77,6 +77,19 @@ Cost accepted by the owner: if a visitor's phone or the door code fails, nobody 
 
 An inline SVG scene: a Formula car follows the track, loses the bend, skids into the gravel, and stops in a dust cloud, then the scene replays after a pause. It needs no JavaScript. With reduced motion on, the car sits still off the track. Below it are "404", "خرجت عن المسار", and a button home. All not-found addresses show it, in the address's language. Addresses with no language in them use Arabic, because reading a cookie there would make cached pages dynamic.
 
+## Readable codes
+
+Every code follows `UQU-<WORD>-<6 characters>`, where UQU stands for Umm Al-Qura University and the word comes from Formula racing and shows the code's purpose:
+
+| Code | Example |
+|---|---|
+| Visitor badge | `UQU-RACER-7K3Q9M` |
+| Coins | `UQU-PIT-7K3Q9M` |
+| Attendance | `UQU-GRID-7K3Q9M` |
+| Challenge badge | `UQU-PODIUM-7K3Q9M` |
+
+A typed code matches in any letter case, with or without dashes. A migration replaces all existing codes, so anything printed before it must be printed again. Registration retries if a new visitor code happens to be taken.
+
 ## Testing
 
 Integration tests cover earning, repeats, simultaneous scans, the all-days rule, switched-off badges, image validation, every delete rule, and the migration's staff conversion. End-to-end tests on a phone viewport cover creating and earning a badge, the delete warning, the agenda sections, and the not-found page.

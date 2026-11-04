@@ -14,7 +14,7 @@ test("a new visitor registers with Arabic digits and sees their badge", async ({
   await expect(page).toHaveURL(/\/ar\/badge$/);
   await expect(page.getByRole("heading", { name: "سارة أحمد" })).toBeVisible();
   await expect(page.locator(".badge-qr svg")).toBeVisible();
-  await expect(page.locator(".badge-code .numeric")).toHaveText(/^FW/);
+  await expect(page.locator(".badge-code .numeric")).toHaveText(/^UQU-RACER-/);
 });
 
 test("invalid registration marks the fields and stays on the form", async ({ page }) => {

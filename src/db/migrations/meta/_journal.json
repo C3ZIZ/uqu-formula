@@ -29,6 +29,13 @@
       "when": 1793782737326,
       "tag": "0003_remove-staff-role",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793782972837,
+      "tag": "0004_readable-codes",
+      "breakpoints": true
     }
   ]
 }

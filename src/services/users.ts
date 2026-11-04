@@ -2,10 +2,10 @@
 import { createHash, randomBytes } from "node:crypto";
 import { and, count, countDistinct, desc, eq, gt, ilike, isNull, or, sql, sum } from "drizzle-orm";
 import { LIMITS } from "@/config/limits";
-import { ERROR_CODES, ROLES, type Role } from "@/config/literals";
+import { CODE_KINDS, ERROR_CODES, ROLES, type Role } from "@/config/literals";
 import { db } from "@/db/client";
 import { checkIns, coinClaims, passwordResets, users } from "@/db/schema";
-import { generateBadgeCode } from "@/lib/codes";
+import { generateCode } from "@/lib/codes";
 import { riyadhDate } from "@/lib/dates";
 import { hashPassword, verifyPassword } from "@/lib/password";
 import { toLatinDigits, type RegisterInput } from "@/lib/validation";
@@ -17,22 +17,26 @@ const LAST_ADMIN_LOCK = 7201;
 // Compared against when an email is unknown, so timing does not reveal registered emails.
 let decoyHash: Promise<string> | undefined;
 
-/** Creates a visitor account. A database rule rejects a repeated email. */
+/** Creates a visitor account. Database rules reject a repeated email, and a repeated visitor code gets a new try. */
 export async function registerUser(input: RegisterInput) {
   const passwordHash = await hashPassword(input.password);
-  const [user] = await db
-    .insert(users)
-    .values({
-      name: input.name,
-      email: input.email,
-      phone: input.phone,
-      passwordHash,
-      badgeCode: generateBadgeCode(),
-    })
-    .onConflictDoNothing({ target: users.email })
-    .returning();
-  if (!user) return { ok: false as const, code: ERROR_CODES.emailTaken };
-  return { ok: true as const, user };
+  for (let attempt = 0; attempt < LIMITS.registerCodeAttempts; attempt += 1) {
+    const [user] = await db
+      .insert(users)
+      .values({
+        name: input.name,
+        email: input.email,
+        phone: input.phone,
+        passwordHash,
+        badgeCode: generateCode(CODE_KINDS.visitor),
+      })
+      .onConflictDoNothing()
+      .returning();
+    if (user) return { ok: true as const, user };
+    const [taken] = await db.select({ id: users.id }).from(users).where(eq(users.email, input.email)).limit(1);
+    if (taken) return { ok: false as const, code: ERROR_CODES.emailTaken };
+  }
+  throw new Error("could not find a free visitor code");
 }
 
 /** Records one failed login and locks the account once it reaches the limit. */

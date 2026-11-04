@@ -139,3 +139,19 @@
 - [ ] Update the README's overview and project notes.
 - [ ] Run unit, integration, e2e, lint, and typecheck against a rebuilt stack.
 - [ ] Commit, then run the final whole-branch review.
+
+### Task 9: Readable codes
+
+Runs before Task 4, which needs the generator.
+
+**Files:**
+- Modify: `src/config/literals.ts`, `src/config/limits.ts`, `src/lib/codes.ts`, `src/lib/qr-payload.ts`, `src/services/{users,coins,attendance-codes}.ts`, `src/db/seed.ts`, `tests/`
+- Create: migration replacing all stored codes
+
+**Interfaces:**
+- Produces: `CODE_KINDS`, `generateCode(kind): string`, `normalizeCode` returning the dashed form.
+
+- [ ] Write failing tests for the format, typed-code matching, the migration, and the registration retry.
+- [ ] Watch them fail.
+- [ ] Implement, and generate the data migration.
+- [ ] Run the suite. Commit.

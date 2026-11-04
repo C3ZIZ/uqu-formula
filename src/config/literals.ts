@@ -38,7 +38,11 @@ export const CHECK_IN_STATUS = {
 export type CheckInStatus = (typeof CHECK_IN_STATUS)[keyof typeof CHECK_IN_STATUS];
 
 export const CODE_ALPHABET = "23456789ABCDEFGHJKMNPQRSTVWXYZ";
-export const BADGE_CODE_PREFIX = "FW";
+export const CODE_PREFIX = "UQU";
+export const CODE_KINDS = { visitor: "visitor", coin: "coin", attendance: "attendance", badge: "badge" } as const;
+export type CodeKind = (typeof CODE_KINDS)[keyof typeof CODE_KINDS];
+// A Formula word for each kind of code, so a code shows its purpose at a glance.
+export const CODE_WORDS: Record<CodeKind, string> = { visitor: "RACER", coin: "PIT", attendance: "GRID", badge: "PODIUM" };
 
 export const CSV_FILE_NAME = "formula-week-registrants.csv";
 export const JWT_ALGORITHM = "HS256";

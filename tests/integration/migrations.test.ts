@@ -77,3 +77,53 @@ describe("removing the staff role", () => {
     expect(ROLE_LIST).toEqual(["visitor", "admin"]);
   });
 });
+
+describe("replacing every code with the readable format", () => {
+  let scratch: Client;
+
+  beforeAll(async () => {
+    await onServer(`DROP DATABASE IF EXISTS ${SCRATCH_DB}`);
+    await onServer(`CREATE DATABASE ${SCRATCH_DB}`);
+    const url = new URL(adminUrl);
+    url.pathname = `/${SCRATCH_DB}`;
+    scratch = new Client({ connectionString: url.toString() });
+    await scratch.connect();
+    for (const idx of [0, 1, 2, 3]) await applyMigration(scratch, idx);
+  });
+
+  afterAll(async () => {
+    await scratch.end();
+    await onServer(`DROP DATABASE IF EXISTS ${SCRATCH_DB}`);
+  });
+
+  it("gives each row its own new code and keeps everything else", async () => {
+    for (const n of [1, 2]) {
+      await scratch.query(
+        `INSERT INTO users (name, email, phone, password_hash, badge_code) VALUES ('P', $1, '05', 'h', $2)`,
+        [`p${n}@example.com`, `FWOLD${n}`],
+      );
+      await scratch.query(`INSERT INTO coin_codes (token, label_ar, label_en, coins) VALUES ($1, 'أ', 'a', 5)`, [`OLDCOIN${n}`]);
+      await scratch.query(`INSERT INTO attendance_codes (token, event_date) VALUES ($1, $2)`, [`OLDDAY${n}`, `2026-12-1${n}`]);
+    }
+
+    await applyMigration(scratch, 4);
+
+    /**
+     *
+     */
+    const pattern = (word: string) => new RegExp(`^UQU-${word}-[2-9A-HJKMNP-TV-Z]{6}$`);
+    const checks: [string, string][] = [
+      ["SELECT badge_code AS code FROM users", "RACER"],
+      ["SELECT token AS code FROM coin_codes", "PIT"],
+      ["SELECT token AS code FROM attendance_codes", "GRID"],
+    ];
+    for (const [query, word] of checks) {
+      const { rows } = await scratch.query(query);
+      expect(rows).toHaveLength(2);
+      for (const row of rows) expect(row.code).toMatch(pattern(word));
+      expect(new Set(rows.map((row) => row.code)).size).toBe(2);
+    }
+    const coins = await scratch.query(`SELECT coins FROM coin_codes`);
+    expect(coins.rows).toEqual([{ coins: 5 }, { coins: 5 }]);
+  });
+});

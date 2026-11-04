@@ -25,7 +25,7 @@ describe("registration", () => {
   it("creates a visitor with a badge code", async () => {
     const result = await registerUser(INPUT);
     expect(result).toMatchObject({ ok: true, user: { role: "visitor" } });
-    if (result.ok) expect(result.user.badgeCode).toMatch(/^FW/);
+    if (result.ok) expect(result.user.badgeCode).toMatch(/^UQU-RACER-/);
   });
 
   it("refuses the same email again", async () => {
