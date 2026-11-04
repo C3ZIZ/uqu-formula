@@ -52,3 +52,19 @@ describe("project conventions", () => {
     expect(offenders).toEqual([]);
   });
 });
+
+describe("admin page access", () => {
+  const pages = listFiles("src/app/[locale]/admin").filter((file) => file.endsWith("page.tsx"));
+
+  it("finds the admin pages", () => {
+    expect(pages.length).toBeGreaterThan(0);
+  });
+
+  it.each(pages)("%s checks the role itself before anything else", (file) => {
+    const source = readFileSync(file, "utf8");
+    const body = source.slice(source.indexOf("export default async function"));
+    const lines = body.split("\n").map((line) => line.trim());
+    expect(lines[1]).toBe("const locale = await pageLocale(params);");
+    expect(lines[2]).toBe("await requireAdmin(locale);");
+  });
+});

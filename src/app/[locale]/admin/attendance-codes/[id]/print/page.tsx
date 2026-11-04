@@ -9,6 +9,7 @@ import { localePath, PAGE_ROUTES } from "@/config/routes";
 import { formatEventDate } from "@/lib/dates";
 import { getEnv } from "@/lib/env";
 import { pickLocalized } from "@/lib/localized";
+import { requireAdmin } from "@/lib/auth";
 import { pageLocale } from "@/lib/page";
 import { qrSvg } from "@/lib/qr";
 import { getAttendanceCode } from "@/services/attendance-codes";
@@ -20,6 +21,7 @@ interface PrintProps {
 /** Shows the code large, with its date, place, and typed fallback. */
 export default async function PrintAttendanceCodePage({ params }: PrintProps) {
   const locale = await pageLocale(params);
+  await requireAdmin(locale);
   const { id } = await params;
   const code = z.uuid().safeParse(id).success ? await getAttendanceCode(id) : undefined;
   if (!code) notFound();

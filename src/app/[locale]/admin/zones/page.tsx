@@ -2,12 +2,14 @@
 import { PageBand } from "@/components/PageBand";
 import { ZonesManager } from "@/components/admin/ZonesManager";
 import { getMessages } from "@/config/messages";
+import { requireAdmin } from "@/lib/auth";
 import { pageLocale, type LocaleProps } from "@/lib/page";
 import { loadZones } from "@/services/zones";
 
 /** Loads current zones, skipping the public cache so edits show at once. */
 export default async function AdminZonesPage({ params }: LocaleProps) {
   const locale = await pageLocale(params);
+  await requireAdmin(locale);
   const text = getMessages(locale);
   return (
     <main className="page">

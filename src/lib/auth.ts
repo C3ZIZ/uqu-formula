@@ -38,6 +38,11 @@ export async function requireRole(locale: Locale, nextPath: string, roles: Role[
   return user;
 }
 
+/** Returns the admin for an admin page. Every such page calls this before loading data, because a layout's check does not stop the page from rendering. */
+export function requireAdmin(locale: Locale): Promise<User> {
+  return requireRole(locale, localePath(locale, PAGE_ROUTES.admin), ADMIN_ROLES);
+}
+
 type ApiAccess<T> = { ok: true; value: T } | { ok: false; response: Response };
 
 /** Returns the session for an API route, or a ready error reply. */

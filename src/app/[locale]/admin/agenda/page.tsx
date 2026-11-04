@@ -3,6 +3,7 @@ import { PageBand } from "@/components/PageBand";
 import { AgendaManager } from "@/components/admin/AgendaManager";
 import { getMessages } from "@/config/messages";
 import { agendaOpenDay, riyadhDate } from "@/lib/dates";
+import { requireAdmin } from "@/lib/auth";
 import { pageLocale, type LocaleProps } from "@/lib/page";
 import { loadAgenda } from "@/services/agenda";
 import { loadZones } from "@/services/zones";
@@ -10,6 +11,7 @@ import { loadZones } from "@/services/zones";
 /** Loads current agenda data, skipping the public cache so edits show at once. */
 export default async function AdminAgendaPage({ params }: LocaleProps) {
   const locale = await pageLocale(params);
+  await requireAdmin(locale);
   const text = getMessages(locale);
   const [items, zones] = await Promise.all([loadAgenda(), loadZones()]);
   return (

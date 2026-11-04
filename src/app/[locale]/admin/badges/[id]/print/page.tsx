@@ -8,6 +8,7 @@ import { getMessages } from "@/config/messages";
 import { localePath, PAGE_ROUTES } from "@/config/routes";
 import { getEnv } from "@/lib/env";
 import { pickLocalized } from "@/lib/localized";
+import { requireAdmin } from "@/lib/auth";
 import { pageLocale } from "@/lib/page";
 import { qrSvg } from "@/lib/qr";
 import { getBadge } from "@/services/badges";
@@ -19,6 +20,7 @@ interface PrintProps {
 /** Shows the code large, with the badge's name and typed fallback. The all-days badge has no code. */
 export default async function PrintBadgePage({ params }: PrintProps) {
   const locale = await pageLocale(params);
+  await requireAdmin(locale);
   const { id } = await params;
   const badge = z.uuid().safeParse(id).success ? await getBadge(id) : undefined;
   if (!badge?.token) notFound();

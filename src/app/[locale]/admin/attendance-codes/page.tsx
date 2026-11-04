@@ -3,6 +3,7 @@ import { PageBand } from "@/components/PageBand";
 import { AttendanceCodesManager } from "@/components/admin/AttendanceCodesManager";
 import { getMessages } from "@/config/messages";
 import { riyadhDate } from "@/lib/dates";
+import { requireAdmin } from "@/lib/auth";
 import { pageLocale, type LocaleProps } from "@/lib/page";
 import { listAttendanceCodes } from "@/services/attendance-codes";
 import { loadZones } from "@/services/zones";
@@ -10,6 +11,7 @@ import { loadZones } from "@/services/zones";
 /** Lists the daily codes, their places, and how many visitors attended each day. */
 export default async function AdminAttendanceCodesPage({ params }: LocaleProps) {
   const locale = await pageLocale(params);
+  await requireAdmin(locale);
   const text = getMessages(locale);
   const [items, zones] = await Promise.all([listAttendanceCodes(), loadZones()]);
   return (
