@@ -1,6 +1,6 @@
 // Tests input rules, including Arabic digits and email casing.
 import { describe, expect, it } from "vitest";
-import { agendaSchema, coinCodeSchema, registerSchema, toLatinDigits, zoneSchema } from "@/lib/validation";
+import { badgeCreateSchema, badgeUpdateSchema, agendaSchema, coinCodeSchema, registerSchema, toLatinDigits, zoneSchema } from "@/lib/validation";
 
 const VALID = { name: "سارة", email: "Sara@Example.COM", phone: "٠٥٠١٢٣٤٥٦٧", password: "longenough" };
 
@@ -56,3 +56,18 @@ describe("admin content rules", () => {
     expect(zoneSchema.safeParse(zone).success).toBe(false);
   });
 });
+
+describe("badge descriptions", () => {
+  const VALID = { kind: "challenge", nameAr: "أ", nameEn: "a", challengeAr: "غيّر الإطارات", challengeEn: "Change the tires", icon: "flag" };
+
+  it("accepts a badge that explains what to do", () => {
+    expect(badgeCreateSchema.safeParse(VALID).success).toBe(true);
+  });
+
+  it.each(["challengeAr", "challengeEn"])("requires %s when creating and editing", (field) => {
+    const blank = { ...VALID, [field]: "   " };
+    expect(badgeCreateSchema.safeParse(blank).success).toBe(false);
+    expect(badgeUpdateSchema.safeParse(blank).success).toBe(false);
+  });
+});
+

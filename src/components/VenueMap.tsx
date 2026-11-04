@@ -83,7 +83,7 @@ export function VenueMap({ zones, text, dayLabel }: VenueMapProps) {
           </button>
         ))}
       </div>
-      <p className="map-notice content">{text.sampleNotice}</p>
+      {zones.length === 0 ? <p className="map-notice content">{text.empty}</p> : null}
 
       <dialog
         ref={dialog}

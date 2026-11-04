@@ -1,4 +1,4 @@
-// Creates the first admin and, on an empty database, sample content. Safe to run repeatedly.
+// Creates the first admin and, only when asked, sample content on an empty database. Safe to run repeatedly.
 import { fileURLToPath } from "node:url";
 import { count } from "drizzle-orm";
 import { CODE_KINDS, ROLES } from "@/config/literals";
@@ -46,9 +46,16 @@ async function seedCoinCodes(): Promise<void> {
   await db.insert(coinCodes).values(SAMPLE_COIN_CODES.map((code) => ({ ...code, token: generateCode(CODE_KINDS.coin) })));
 }
 
-/** Runs all seed steps. */
-export async function runSeed({ adminEmail, adminPassword }: { adminEmail: string; adminPassword: string }) {
+interface SeedOptions {
+  adminEmail: string;
+  adminPassword: string;
+  sampleContent?: boolean;
+}
+
+/** Runs the seed steps. Sample content is opt-in, so a real site that starts empty stays empty. */
+export async function runSeed({ adminEmail, adminPassword, sampleContent = false }: SeedOptions) {
   await seedAdmin(adminEmail, adminPassword);
+  if (!sampleContent) return;
   await seedContent();
   await seedCoinCodes();
 }
@@ -57,7 +64,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const adminEmail = process.env.SEED_ADMIN_EMAIL;
   const adminPassword = process.env.SEED_ADMIN_PASSWORD;
   if (!adminEmail || !adminPassword) throw new Error("SEED_ADMIN_EMAIL and SEED_ADMIN_PASSWORD are required.");
-  await runSeed({ adminEmail, adminPassword });
+  await runSeed({ adminEmail, adminPassword, sampleContent: process.env.SEED_SAMPLE_CONTENT === "true" });
   await pool.end();
   console.log("Seed complete.");
 }

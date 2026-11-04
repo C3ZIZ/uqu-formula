@@ -1,8 +1,7 @@
 // Shrinks a picture in the browser before upload, so any phone photo fits the size limit.
 import { LIMITS } from "@/config/limits";
+import { BADGE_IMAGE_TYPES } from "@/config/literals";
 
-const WEBP = "image/webp";
-const JPEG = "image/jpeg";
 const QUALITY = 0.85;
 
 export interface ShrunkImage {
@@ -13,7 +12,7 @@ export interface ShrunkImage {
 /** Splits a data address into its type and its encoded bytes. */
 function readDataUrl(dataUrl: string) {
   const [header, base64] = dataUrl.split(",");
-  return { base64, isWebp: header.includes(WEBP), bytes: (base64.length * 3) / 4 };
+  return { base64, isWebp: header.includes(BADGE_IMAGE_TYPES.webp), bytes: (base64.length * 3) / 4 };
 }
 
 /** Draws the picture at no more than the allowed side. It returns null if the file cannot be read as a picture. */
@@ -28,9 +27,9 @@ export async function shrinkImage(file: File): Promise<ShrunkImage | null> {
     bitmap.close();
 
     // Some browsers cannot write WebP and fall back to a larger PNG, so JPEG is the last resort.
-    let previewUrl = canvas.toDataURL(WEBP, QUALITY);
+    let previewUrl = canvas.toDataURL(BADGE_IMAGE_TYPES.webp, QUALITY);
     if (!readDataUrl(previewUrl).isWebp && readDataUrl(previewUrl).bytes > LIMITS.badgeImageMaxBytes) {
-      previewUrl = canvas.toDataURL(JPEG, QUALITY);
+      previewUrl = canvas.toDataURL(BADGE_IMAGE_TYPES.jpeg, QUALITY);
     }
     const { base64, bytes } = readDataUrl(previewUrl);
     return bytes <= LIMITS.badgeImageMaxBytes ? { base64, previewUrl } : null;

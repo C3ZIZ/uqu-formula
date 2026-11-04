@@ -11,7 +11,7 @@ import { pickLocalized } from "@/lib/localized";
 import { Printer } from "lucide-react";
 import Link from "next/link";
 import { BadgeImagePicker } from "./BadgeImagePicker";
-import { ResourceManager, type FieldSpec } from "./ResourceManager";
+import { ResourceManager, type FieldSpec, type FormValues } from "./ResourceManager";
 
 export interface BadgeRow {
   id: string;
@@ -52,18 +52,17 @@ export function BadgesManager({ locale, items, text, errors, fieldErrors }: Badg
     options: BADGE_KINDS.map((kind) => ({ value: kind, label: copy.kinds[kind] })),
   };
 
-  /** Switches a badge on or off, keeping its other values and image. */
-  async function toggle(badge: BadgeRow, refresh: () => void) {
-    const { nameAr, nameEn, challengeAr, challengeEn, icon, isActive } = badge;
-    const result = await sendJson(API_ROUTES.adminBadge(badge.id), "PUT", {
-      nameAr,
-      nameEn,
-      challengeAr,
-      challengeEn,
-      icon,
-      isActive: !isActive,
-    });
+  /** Switches a badge on or off and reports a failure. */
+  async function toggle(badge: BadgeRow, refresh: () => void, reportError: (code: string) => void) {
+    const result = await sendJson(API_ROUTES.adminBadge(badge.id), "PATCH", { isActive: !badge.isActive });
     if (result.ok) refresh();
+    else reportError(result.error);
+  }
+
+  /** Leaves out the preview, which only this screen needs. */
+  function toBody({ previewUrl, ...values }: FormValues): FormValues {
+    void previewUrl;
+    return values;
   }
 
   return (
@@ -72,6 +71,7 @@ export function BadgesManager({ locale, items, text, errors, fieldErrors }: Badg
       items={items}
       fields={[kindField, ...fields]}
       editFields={fields}
+      toBody={toBody}
       emptyValues={{
         kind: BADGE_KINDS_BY_NAME.challenge,
         nameAr: "",
@@ -108,7 +108,7 @@ export function BadgesManager({ locale, items, text, errors, fieldErrors }: Badg
           </div>
         </div>
       )}
-      renderActions={(badge, refresh) => (
+      renderActions={(badge, refresh, reportError) => (
         <>
           {badge.token ? (
             <>
@@ -119,7 +119,7 @@ export function BadgesManager({ locale, items, text, errors, fieldErrors }: Badg
               <a className="text-action" href={API_ROUTES.adminBadgeQr(badge.id)} download>{shared.download}</a>
             </>
           ) : null}
-          <button type="button" className="text-action" onClick={() => toggle(badge, refresh)}>
+          <button type="button" className="text-action" onClick={() => toggle(badge, refresh, reportError)}>
             {badge.isActive ? shared.deactivate : shared.activate}
           </button>
         </>

@@ -135,3 +135,23 @@ test("visitors cannot manage attendance codes", async ({ request }) => {
   const created = await request.post("/api/admin/attendance-codes", { data: { eventDate: "2031-06-01", zoneId: "00000000-0000-4000-8000-000000000000" } });
   expect(created.status()).toBe(403);
 });
+
+test("a code on a date outside the event warns that it does not count toward the all-days badge", async ({ page }) => {
+  await page.goto("/ar/login");
+  await loginByForm(page, ADMIN.email, ADMIN.password);
+  await expect(page).toHaveURL(/\/ar$/);
+  await page.goto("/ar/admin/attendance-codes");
+  await page.getByRole("button", { name: "إضافة" }).click();
+  const warning = page.locator(".resource-form .form-note");
+  await page.getByLabel("التاريخ").fill("2026-12-13");
+  await expect(warning).toHaveCount(0);
+  await page.getByLabel("التاريخ").fill("2034-02-02");
+  await expect(warning).toContainText("ليس من أيام الفعالية");
+  await page.getByRole("button", { name: "حفظ" }).click();
+  const row = page.locator(".resource-list li", { hasText: "2034-02-02" });
+  await expect(row).toContainText("ليس من أيام الفعالية");
+  await row.getByRole("button", { name: "حذف" }).click();
+  await row.getByRole("button", { name: "اضغط مرة أخرى للتأكيد" }).click();
+  await expect(page.locator(".resource-list")).not.toContainText("2034-02-02");
+});
+

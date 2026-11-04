@@ -8,6 +8,7 @@ import { authenticate } from "@/services/users";
 import { resetDatabase } from "./helpers";
 
 const ADMIN = { adminEmail: "Admin@Example.com", adminPassword: "admin-password-1" };
+const WITH_SAMPLES = { ...ADMIN, sampleContent: true };
 
 /** Counts the rows in each seeded table. */
 async function tableCounts() {
@@ -27,26 +28,32 @@ describe("seed", () => {
     expect((await authenticate("admin@example.com", ADMIN.adminPassword)).ok).toBe(true);
   });
 
+  it("creates only the admin by default, however many times it runs", async () => {
+    await runSeed(ADMIN);
+    await runSeed(ADMIN);
+    expect(await tableCounts()).toEqual([1, 0, 0, 0]);
+  });
+
   it("adds nothing on a second run", async () => {
-    await runSeed(ADMIN);
+    await runSeed(WITH_SAMPLES);
     const first = await tableCounts();
-    await runSeed(ADMIN);
+    await runSeed(WITH_SAMPLES);
     expect(await tableCounts()).toEqual(first);
     expect(first.every((value) => value > 0)).toBe(true);
   });
 
   it("keeps content an admin later deleted from coming back while other content exists", async () => {
-    await runSeed(ADMIN);
+    await runSeed(WITH_SAMPLES);
     const [zone] = await db.select().from(zones).limit(1);
     await db.delete(agendaItems).where(eq(agendaItems.zoneId, zone.id));
     await db.delete(zones).where(eq(zones.id, zone.id));
     const before = await tableCounts();
-    await runSeed(ADMIN);
+    await runSeed(WITH_SAMPLES);
     expect(await tableCounts()).toEqual(before);
   });
 
   it("places every sample zone inside the map and links agenda items to zones", async () => {
-    await runSeed(ADMIN);
+    await runSeed(WITH_SAMPLES);
     const allZones = await db.select().from(zones);
     expect(allZones.every((zone) => zone.x + zone.width <= 100 && zone.y + zone.height <= 140)).toBe(true);
     const items = await db.select().from(agendaItems);

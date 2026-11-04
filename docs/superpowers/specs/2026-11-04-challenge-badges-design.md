@@ -30,7 +30,8 @@ Rules:
 - The all-days badge is worked out from recorded attendance and is not stored per visitor. It therefore also covers visitors who attended before the badge was created.
 - The check-in result tells a visitor when that check-in completes the all-days badge.
 - Every badge has an Arabic and English name and challenge description, plus an on/off switch.
-- A switched-off badge cannot be earned and is hidden from visitors who have not earned it. Visitors keep badges they already earned.
+- A switched-off challenge badge cannot be earned and is hidden from visitors who have not earned it. Visitors keep challenge badges they already earned.
+- The all-days badge is worked out rather than stored, so switching it off hides it from everyone until it is switched on again.
 - The one scan button handles badge codes. The QR holds the existing `/scan/<token>` link, and the scan page routes the token by what it belongs to.
 
 ### Appearance
@@ -75,7 +76,7 @@ Cost accepted by the owner: if a visitor's phone or the door code fails, nobody 
 
 ## Not-found page
 
-An inline SVG scene: a Formula car follows the track, loses the bend, skids into the gravel, and stops in a dust cloud, then the scene replays after a pause. It needs no JavaScript. With reduced motion on, the car sits still off the track. Below it are "404", "خرجت عن المسار", and a button home. All not-found addresses show it, in the address's language. Addresses with no language in them use Arabic, because reading a cookie there would make cached pages dynamic.
+An inline SVG scene: a Formula car follows the track, loses the bend, skids into the gravel, and stops in a dust cloud, then the scene replays after a pause. The animation itself needs no script, but the page does: Next.js sends a thrown not-found page with an empty body and draws it in the browser. With reduced motion on, the car sits still off the track. Below it are "404", "خرجت عن المسار", and a button home. All not-found addresses show it, in the address's language. Addresses with no language in them use Arabic, because reading a cookie there would make cached pages dynamic.
 
 ## Readable codes
 

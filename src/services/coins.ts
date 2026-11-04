@@ -95,6 +95,12 @@ export async function updateCoinCode(id: string, input: CoinCodeInput): Promise<
   return rows.length > 0;
 }
 
+/** Switches a code on or off, leaving everything else as it is. Returns false if it does not exist. */
+export async function setCoinCodeActive(id: string, isActive: boolean): Promise<boolean> {
+  const rows = await db.update(coinCodes).set({ isActive }).where(eq(coinCodes.id, id)).returning({ id: coinCodes.id });
+  return rows.length > 0;
+}
+
 /** Deletes a code unless visitors have already collected it. */
 export async function deleteCoinCode(id: string): Promise<DeleteOutcome> {
   const hasClaims = sql`EXISTS (SELECT 1 FROM ${coinClaims} WHERE ${coinClaims.codeId} = ${coinCodes.id})`;

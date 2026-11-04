@@ -20,7 +20,7 @@ test("admin pages send their data only to admins", async ({ playwright, baseURL 
   const coin = await createCode(admin);
   await loginAdminApi(admin);
   const badgeReply = await admin.post("/api/admin/badges", {
-    data: { kind: "challenge", nameAr: "سري", nameEn: "Secret", challengeAr: "", challengeEn: "", icon: "flag", isActive: true },
+    data: { kind: "challenge", nameAr: "سري", nameEn: "Secret", challengeAr: "تحدي", challengeEn: "Challenge", icon: "flag", isActive: true },
   });
   expect(badgeReply.status()).toBe(201);
   const badge = await badgeReply.json();

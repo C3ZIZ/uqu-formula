@@ -12,6 +12,7 @@ import {
   isBadgeToken,
   listBadges,
   readBadgeImage,
+  setBadgeActive,
   updateBadge,
 } from "@/services/badges";
 import { createZone } from "@/services/zones";
@@ -118,6 +119,28 @@ describe("the all-days badge", () => {
     expect(repeat).not.toHaveProperty("allDaysBadge");
   });
 
+  it("does not announce it again on a check-in outside the event", async () => {
+    const visitor = await makeUser();
+    await makeBadge("all_days");
+    await attend(visitor.id, ["2026-12-13", "2026-12-14", "2026-12-15"]);
+    const zone = await createZone({ nameAr: "م", nameEn: "G", detailsAr: "", detailsEn: "", type: "entrance", x: 1, y: 1, width: 5, height: 5 });
+    const code = await createAttendanceCode({ eventDate: "2031-01-01", zoneId: zone.id });
+    if (!code.ok) throw new Error(code.code);
+    const result = await checkInWithCode(visitor.id, code.code.token, new Date("2031-01-01T08:00:00Z"));
+    expect(result.status).toBe("checked_in");
+    expect(result).not.toHaveProperty("allDaysBadge");
+  });
+
+  it("is hidden while switched off, and returns when switched on", async () => {
+    const visitor = await makeUser();
+    const badge = await makeBadge("all_days");
+    await attend(visitor.id, ["2026-12-13", "2026-12-14", "2026-12-15"]);
+    await setBadgeActive(badge.id, false);
+    expect(await getVisitorBadges(visitor.id)).toHaveLength(0);
+    await setBadgeActive(badge.id, true);
+    expect((await getVisitorBadges(visitor.id))[0]).toMatchObject({ earned: true });
+  });
+
   it("does not announce a check-in that leaves days missing", async () => {
     const visitor = await makeUser();
     await makeBadge("all_days");
@@ -187,6 +210,14 @@ describe("badge images", () => {
 
 describe("managing badges", () => {
   beforeEach(resetDatabase);
+
+  it("switches on and off without touching anything else", async () => {
+    const badge = await makeBadge();
+    await updateBadge(badge.id, { ...FIELDS, nameEn: "Edited by another admin" });
+    expect(await setBadgeActive(badge.id, false)).toBe(true);
+    expect(await getBadge(badge.id)).toMatchObject({ isActive: false, nameEn: "Edited by another admin" });
+    expect(await setBadgeActive("00000000-0000-4000-8000-000000000000", true)).toBe(false);
+  });
 
   it("does not change a badge's kind or code on edit", async () => {
     const badge = await makeBadge();
