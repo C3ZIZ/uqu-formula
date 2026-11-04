@@ -47,6 +47,7 @@ export function AgendaManager({ locale, items, zones, text, errors, fieldErrors,
 
   return (
     <ResourceManager
+      locale={locale}
       items={items}
       fields={fields}
       emptyValues={{ titleAr: "", titleEn: "", detailsAr: "", detailsEn: "", day: "1", startTime: "", endTime: "", zoneId: "" }}

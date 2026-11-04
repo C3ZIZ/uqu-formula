@@ -26,20 +26,11 @@ describe("zones and agenda", () => {
     expect(agenda.map((item) => `${item.day}-${item.startTime}`)).toEqual(["1-10:00", "1-12:00", "2-09:00"]);
   });
 
-  it("keeps agenda items when their zone is deleted", async () => {
-    const zone = await createZone(ZONE);
-    await createAgendaItem({ ...ITEM, zoneId: zone.id });
-    await deleteZone(zone.id);
-    const agenda = await getAgenda();
-    expect(agenda).toHaveLength(1);
-    expect(agenda[0].zoneId).toBeNull();
-  });
-
   it("reports a missing item on update and delete", async () => {
     const missing = "00000000-0000-4000-8000-000000000000";
     expect(await updateAgendaItem(missing, ITEM)).toBe(false);
     expect(await deleteAgendaItem(missing)).toBe(false);
     expect(await updateZone(missing, ZONE)).toBe(false);
-    expect(await deleteZone(missing)).toBe(false);
+    expect(await deleteZone(missing)).toEqual({ ok: false, code: "NOT_FOUND" });
   });
 });

@@ -1,6 +1,6 @@
 // Tests the admin panel, roles, CSV export, and password reset.
 import { expect, test } from "@playwright/test";
-import { ADMIN, loginByForm, registerByApi, registerByForm, uniqueEmail } from "./helpers";
+import { ADMIN, createPlace, loginAdminApi, loginByForm, registerByApi, registerByForm, uniqueEmail } from "./helpers";
 
 const MAILPIT = "http://localhost:8025/api/v1";
 
@@ -51,7 +51,7 @@ test("an admin creates a coin code in the panel, and a visitor can claim it", as
   const claimed = page.locator(".resource-list li", { hasText: label });
   await claimed.getByRole("button", { name: "حذف" }).click();
   await claimed.getByRole("button", { name: "اضغط مرة أخرى للتأكيد" }).click();
-  await expect(page.locator(".form-error")).toContainText("لا يمكن حذفه");
+  await expect(page.locator(".form-error")).toContainText("لا يمكن الحذف");
 });
 
 test("an admin edits the agenda and the change reaches visitors", async ({ page }) => {
@@ -103,6 +103,34 @@ test("an admin places a new zone by tapping the map", async ({ page }) => {
   await row.getByRole("button", { name: "حذف" }).click();
   await row.getByRole("button", { name: "اضغط مرة أخرى للتأكيد" }).click();
   await expect(page.locator(".resource-list")).not.toContainText(name);
+});
+
+test("a place with an agenda item and an attendance code cannot be deleted, and the warning names them", async ({ page, request }) => {
+  await loginAdminApi(request);
+  const name = `المسرح ${Date.now()}`;
+  const zoneId = await createPlace(request, name);
+  const title = `فعالية ${Date.now()}`;
+  const item = await request.post("/api/admin/agenda", {
+    data: { titleAr: title, titleEn: "Linked", detailsAr: "", detailsEn: "", day: 1, startTime: "09:00", endTime: "10:00", zoneId },
+  });
+  expect(item.status()).toBe(201);
+  const eventDate = `2032-0${1 + Math.floor(Math.random() * 9)}-1${Math.floor(Math.random() * 9)}`;
+  const code = await request.post("/api/admin/attendance-codes", { data: { eventDate, zoneId } });
+  expect(code.status()).toBe(201);
+
+  await page.goto("/ar/login");
+  await loginByForm(page, ADMIN.email, ADMIN.password);
+  await expect(page).toHaveURL(/\/ar$/);
+  await page.goto("/ar/admin/zones");
+  const row = page.locator(".resource-list li", { hasText: name });
+  await row.getByRole("button", { name: "حذف" }).click();
+  await row.getByRole("button", { name: "اضغط مرة أخرى للتأكيد" }).click();
+  const warning = row.locator(".delete-blocked");
+  await expect(warning).toContainText("لا يمكن الحذف");
+  await expect(warning).toContainText(title);
+  await expect(warning).toContainText("كود حضور");
+  await page.reload();
+  await expect(page.locator(".resource-list")).toContainText(name);
 });
 
 test("the registrant list searches, and the CSV opens with correct Arabic", async ({ page, request }) => {

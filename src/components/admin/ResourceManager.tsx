@@ -1,11 +1,14 @@
-// The shared list, add, edit, and delete screen used for agenda items, zones, and coin codes.
+// The shared list, add, edit, and delete screen used across the admin panel.
 "use client";
 
+import type { Locale } from "@/config/locales";
 import type { Messages } from "@/config/messages";
 import { sendJson } from "@/lib/client-api";
+import type { DeleteLink } from "@/lib/delete-links";
 import { CircleAlert, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useId, useState, type FormEvent, type ReactNode } from "react";
+import { DeleteBlocked } from "./DeleteBlocked";
 
 export type FormValues = Record<string, string | number | boolean | null>;
 
@@ -18,8 +21,10 @@ export interface FieldSpec {
 }
 
 interface ResourceManagerProps<T extends { id: string }> {
+  locale: Locale;
   items: T[];
   fields: FieldSpec[];
+  editFields?: FieldSpec[];
   emptyValues: FormValues;
   createUrl: string;
   itemUrl: (id: string) => string;
@@ -76,7 +81,7 @@ function FormField({ spec, value, invalid, invalidText, onChange }: {
 /** Lists items and handles adding, editing, and two-step deleting. */
 export function ResourceManager<T extends { id: string }>(props: ResourceManagerProps<T>) {
   const { items, fields, emptyValues, createUrl, itemUrl, toValues, renderItem, renderActions, renderFormExtra } = props;
-  const { text, errors, fieldErrors, hideEdit } = props;
+  const { locale, editFields, text, errors, fieldErrors, hideEdit } = props;
   const router = useRouter();
   const [editing, setEditing] = useState<string | null>(null);
   const [values, setValuesState] = useState<FormValues>(emptyValues);
@@ -84,6 +89,7 @@ export function ResourceManager<T extends { id: string }>(props: ResourceManager
   const [error, setError] = useState<string>();
   const [busy, setBusy] = useState(false);
   const [confirming, setConfirming] = useState<string>();
+  const [blocked, setBlocked] = useState<{ id: string; links: DeleteLink[] }>();
 
   /** Merges changed values into the form. */
   function setValues(changes: FormValues) {
@@ -96,6 +102,7 @@ export function ResourceManager<T extends { id: string }>(props: ResourceManager
     setValuesState(initial);
     setBadFields([]);
     setError(undefined);
+    setBlocked(undefined);
   }
 
   /** Reloads the list from the server. */
@@ -127,6 +134,8 @@ export function ResourceManager<T extends { id: string }>(props: ResourceManager
 
   /** Deletes after a second press, avoiding a blocking browser dialog. */
   async function remove(id: string) {
+    setBlocked(undefined);
+    setError(undefined);
     if (confirming !== id) {
       setConfirming(id);
       return;
@@ -134,12 +143,13 @@ export function ResourceManager<T extends { id: string }>(props: ResourceManager
     setConfirming(undefined);
     const result = await sendJson(itemUrl(id), "DELETE");
     if (result.ok) refresh();
+    else if (result.links.length > 0) setBlocked({ id, links: result.links });
     else setError(errorText(result.error));
   }
 
   const form = (
     <form className="form resource-form" onSubmit={save}>
-      {fields.map((spec) => (
+      {(editing !== "new" && editFields ? editFields : fields).map((spec) => (
         <FormField
           key={spec.name}
           spec={spec}
@@ -184,6 +194,7 @@ export function ResourceManager<T extends { id: string }>(props: ResourceManager
             {editing === item.id ? form : (
               <>
                 {renderItem(item)}
+                {blocked?.id === item.id ? <DeleteBlocked locale={locale} links={blocked.links} text={text.deleteBlocked} /> : null}
                 <div className="actions resource-actions">
                   {hideEdit ? null : (
                     <button type="button" className="text-action" onClick={() => open(item.id, toValues(item))}>

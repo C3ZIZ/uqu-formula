@@ -78,7 +78,7 @@ export const agendaItems = pgTable(
     day: integer("day").notNull(),
     startTime: text("start_time").notNull(),
     endTime: text("end_time").notNull(),
-    zoneId: uuid("zone_id").references(() => zones.id, { onDelete: "set null" }),
+    zoneId: uuid("zone_id").references(() => zones.id, { onDelete: "restrict" }),
   },
   (table) => [index("agenda_day_time_idx").on(table.day, table.startTime)],
 );
@@ -117,6 +117,7 @@ export const attendanceCodes = pgTable("attendance_codes", {
   id: uuid("id").primaryKey().defaultRandom(),
   token: text("token").notNull().unique(),
   eventDate: date("event_date").notNull().unique(),
+  zoneId: uuid("zone_id").references(() => zones.id, { onDelete: "restrict" }),
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });

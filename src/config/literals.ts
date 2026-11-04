@@ -12,7 +12,7 @@ export const ERROR_CODES = {
   badOrigin: "BAD_ORIGIN",
   notFound: "NOT_FOUND",
   lastAdmin: "LAST_ADMIN",
-  codeHasClaims: "CODE_HAS_CLAIMS",
+  inUse: "IN_USE",
   attendanceDateTaken: "ATTENDANCE_DATE_TAKEN",
   resetInvalid: "RESET_INVALID",
   server: "SERVER",
@@ -23,6 +23,7 @@ export const COOKIES = { session: "fw_session", locale: "fw_locale" } as const;
 
 export const ZONE_TYPES = ["stage", "workshop", "booth", "competition", "services", "entrance"] as const;
 export type ZoneType = (typeof ZONE_TYPES)[number];
+export const ENTRANCE_ZONE: ZoneType = "entrance";
 
 export const QUERY_PARAMS = { next: "next", token: "token", search: "q", page: "page", locale: "locale", zone: "zone" } as const;
 

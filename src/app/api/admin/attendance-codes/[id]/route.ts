@@ -1,10 +1,10 @@
-// Switches a daily attendance code on or off, or removes it.
+// Changes or removes a daily attendance code.
 import { deleteRoute, updateRoute } from "@/lib/crud-route";
 import { attendanceCodeUpdateSchema } from "@/lib/validation";
-import { deleteAttendanceCode, setAttendanceCodeActive } from "@/services/attendance-codes";
+import { deleteAttendanceCode, updateAttendanceCode } from "@/services/attendance-codes";
 
-// Switches the code on or off.
-export const PUT = updateRoute(attendanceCodeUpdateSchema, (id, input) => setAttendanceCodeActive(id, input.isActive));
+// Changes the code's place or switches it on or off.
+export const PUT = updateRoute(attendanceCodeUpdateSchema, updateAttendanceCode);
 
-// Removes the code. Recorded attendance stays.
+// Removes a code that no visitor has scanned yet.
 export const DELETE = deleteRoute(deleteAttendanceCode);

@@ -764,6 +764,20 @@ html[lang="en"] .band.hero h1 {
   margin-block-start: 12px;
 }
 
+.delete-blocked {
+  margin-block-start: 10px;
+  font-weight: 500;
+}
+
+.delete-blocked ul {
+  margin: 6px 0;
+  padding-inline-start: 18px;
+}
+
+.delete-blocked p {
+  margin: 0;
+}
+
 .resource-actions {
   margin-block-start: 2px;
   column-gap: 18px;
