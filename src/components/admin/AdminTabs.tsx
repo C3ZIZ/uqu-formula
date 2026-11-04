@@ -14,6 +14,7 @@ const TABS = [
   { key: "zones", path: PAGE_ROUTES.adminZones },
   { key: "coinCodes", path: PAGE_ROUTES.adminCoinCodes },
   { key: "attendanceCodes", path: PAGE_ROUTES.adminAttendanceCodes },
+  { key: "badges", path: PAGE_ROUTES.adminBadges },
 ] as const;
 
 interface AdminTabsProps {
